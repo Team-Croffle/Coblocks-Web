@@ -3,7 +3,7 @@
   "jsxSingleQuote": true,
   "endOfLine": "auto",
   "semi": true,
-  "SingleQuote": true,
+  "singleQuote": true,
   "useTabs": false,
   "tabWidth": 2,
   "parser": "babel",

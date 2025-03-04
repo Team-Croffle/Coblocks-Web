@@ -4,7 +4,7 @@
     "browser": true,
     "es6": true,
   },
-  "extends": ["react-app", "eslint:recommended", "airbnb", ,"prettier"],
+  "extends": ["react-app", "eslint:recommended", "airbnb", "prettier"],
   "parser": "@babel/eslint-parser",
   "parserOptions": {
     "ecmaFeatures": {
