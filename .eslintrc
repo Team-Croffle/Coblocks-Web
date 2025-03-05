@@ -27,7 +27,7 @@
     "no-multiple-empty-lines": "error",
     "eqeqeq": "error",
     "dot-notation": "error",
-    "no-unusered-vars": "error"
+    "no-unused-vars": "error"
   },
   "settings": {
     "import/resolver": {
