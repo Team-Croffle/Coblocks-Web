@@ -16,12 +16,12 @@ const DeveloperCard = ({ developer }) => {
         </Card.Title>
         <Card.Img
           className='d-flex mx-auto'
-          style={{ width: '4rem', height: 'auto' }}
+          style={{ width: '10rem', height: 'auto' }}
           src={mbtiImages[developer.mbti]}
         />
         <Card.Text className='text-end'>
           <div className='mt-3'>
-            <Card.Img className='me-1' src={wkuLogo} style={{ width: '20px', height: '20px' }} />
+            <Card.Img className='me-1' src={wkuLogo} style={{ width: '1.6rem', height: 'auto' }} />
             <span>{developer.school}</span>
           </div>
           <div>
