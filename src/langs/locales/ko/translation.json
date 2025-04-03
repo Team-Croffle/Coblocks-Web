@@ -1,0 +1,23 @@
+{
+  "name": "한국어",
+  "value": "ko",
+  "nav": {
+    "home": "홈",
+    "about": "소개",
+    "qna": "Q&A",
+    "login": "로그인",
+    "logout": "로그아웃",
+    "register": "회원가입",
+    "mypage": "마이페이지",
+    "admin": "관리자",
+    "quest": "문제풀이",
+    "beginner": "초급",
+    "intermediate": "중급",
+    "advanced": "고급",
+    "algorithm": "알고리즘",
+    "classroom": "강의실",
+    "createClass": "강의실 만들기",
+    "joinClass": "강의실 참여하기",
+    "classList": "강의실 목록"
+  }
+}
