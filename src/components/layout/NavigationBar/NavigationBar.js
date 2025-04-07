@@ -27,7 +27,7 @@ const NavigationBar = () => {
             </NavDropdown>
           </Nav>
         </Navbar.Collapse>
-        <SelectLocale />
+        <SelectLocale /> {/* 언어 선택기, 다른데로 옮겨서 사용가능 */}
       </Container>
     </Navbar>
   );
