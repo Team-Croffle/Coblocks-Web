@@ -1,12 +1,11 @@
 import { React } from 'react';
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
-import { BsTranslate } from 'react-icons/bs';
 import { useTranslation } from 'react-i18next';
 import { supportedLanguages } from '../../../langs/Translation';
 
 const SelectLocale = () => {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
 
   const changeLanguage = (lng) => {
     i18n.changeLanguage(lng);
@@ -16,15 +15,15 @@ const SelectLocale = () => {
 
   return (
     <InputGroup className='w-auto'>
-      <InputGroup.Text>
-        <BsTranslate />
-      </InputGroup.Text>
       <Form.Select
-        value={t('value')}
+        defaultValue='' // 기본값 설정
         onChange={(e) => {
           changeLanguage(e.target.value);
         }}
       >
+        <option value='' disabled>
+          Language
+        </option>
         {supportedLanguages.map((lang) => {
           return (
             <option key={lang.code} value={lang.code}>
