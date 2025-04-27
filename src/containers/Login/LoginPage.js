@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Form, Modal, Button } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import coblocksLogo from '../../assets/images/coblocks.png';
+import coblocksLogo from '../../assets/images/mainlogo-bg-tp.png';
 
 const User = {
   email: 'abc@naver.com',
