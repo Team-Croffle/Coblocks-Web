@@ -1,0 +1,23 @@
+{
+  "name": "English",
+  "value": "en",
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "qna": "Q&A",
+    "login": "Login",
+    "logout": "Logout",
+    "register": "Register",
+    "mypage": "MyPage",
+    "admin": "Admin",
+    "quest": "Quest",
+    "beginner": "Beginner",
+    "intermediate": "Intermediate",
+    "advanced": "Advanced",
+    "algorithm": "Algorithm",
+    "classroom": "Classroom",
+    "createClass": "Create Class",
+    "joinClass": "Join Class",
+    "classList": "Class List"
+  }
+}

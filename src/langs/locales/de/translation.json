@@ -1,0 +1,23 @@
+{
+  "name": "Deutsch",
+  "value": "de",
+  "nav": {
+    "home": "Startseite",
+    "about": "Über uns",
+    "qna": "Fragen & Antworten",
+    "login": "Anmelden",
+    "logout": "Abmelden",
+    "register": "Registrieren",
+    "mypage": "Meine Seite",
+    "admin": "Administrator",
+    "quest": "Problemlösung",
+    "beginner": "Anfänger",
+    "intermediate": "Fortgeschritten",
+    "advanced": "Experte",
+    "algorithm": "Algorithmus",
+    "classroom": "Klassenraum",
+    "createClass": "Klassenraum erstellen",
+    "joinClass": "Klassenraum beitreten",
+    "classList": "Klassenraumliste"
+  }
+}
