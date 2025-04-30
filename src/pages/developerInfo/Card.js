@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Card from 'react-bootstrap/Card';
+import Container from 'react-bootstrap/Container';
 import { FaGithub, FaInstagram } from 'react-icons/fa';
 import { MdEmail } from 'react-icons/md';
 import InfoCSS from './DeveloperInfo.module.css';
@@ -19,7 +20,7 @@ const DeveloperCard = ({ developer }) => {
           style={{ width: '10rem', height: 'auto' }}
           src={mbtiImages[developer.mbti]}
         />
-        <Card.Text className='text-end'>
+        <Container className='text-end px-0 mx-0'>
           <div className='mt-3'>
             <Card.Img className='me-1' src={wkuLogo} style={{ width: '1.6rem', height: 'auto' }} />
             <span>{developer.school}</span>
@@ -30,17 +31,19 @@ const DeveloperCard = ({ developer }) => {
               {developer.major}
             </p>
             <span className='m-2 fs-4'>
-              <a className='m-1' href={developer.github}>
+              <a className='m-1' href={developer.github} target='_blank' rel='noopener noreferrer'>
                 <FaGithub />
               </a>
-              <a className='ml-2' href={developer.insta}>
+              <a className='ml-2' href={developer.insta} target='_blank' rel='noopener noreferrer'>
                 <FaInstagram />
               </a>
             </span>
           </div>
-        </Card.Text>
-        <p className='m-0 text-end' style={{ fontSize: '0.7rem' }}>
-          <MdEmail /> Email: {developer.email}
+        </Container>
+        <p className='mx-0 mt-2 mb-0 text-end' style={{ fontSize: '0.7rem' }}>
+          <MdEmail /> Email:
+          <br />
+          {developer.email}
         </p>
       </Card.Body>
     </Card>

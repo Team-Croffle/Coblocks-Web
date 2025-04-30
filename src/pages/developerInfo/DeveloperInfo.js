@@ -5,7 +5,7 @@ import Col from 'react-bootstrap/Col';
 import DeveloperCard from './Card';
 import Developers from './Developers.json';
 
-const ContainerExample = () => {
+const developerInfo = () => {
   return (
     <div className='bg-primary bg-opacity-25 p-4 rounded-4 mx-auto my-4 mt-2 mb-5' style={{ maxWidth: '1000px' }}>
       <Container>
@@ -33,4 +33,4 @@ const ContainerExample = () => {
   );
 };
 
-export default ContainerExample;
+export default developerInfo;
