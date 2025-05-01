@@ -5,6 +5,7 @@ import LoginPage from './pages/Login/LoginPage';
 import ForgotPasswordPage from './pages/ForgotPassword/ForgotPasswordPage';
 import ClassroomPage from './pages/Classroom/ClassroomMainPage';
 import Profiler from './data/Dummy/Dummy-ProfilePage';
+import IntroContainer from './pages/Intro/IntroContainer'; // IntroContainer 컴포넌트 가져오기
 
 const AppContent = () => {
   const location = useLocation(); // Router 내부에서 useLocation 호출
@@ -16,11 +17,7 @@ const AppContent = () => {
       <Routes>
         <Route
           path='/'
-          element={
-            <div style={{ textAlign: 'center', marginTop: '50px' }}>
-              <h1>Home Page</h1>
-            </div>
-          }
+          element={<IntroContainer />} // Home Page를 IntroContainer로 변경
         />
         <Route path='/login' element={<LoginPage />} />
         <Route path='/forgot-password' element={<ForgotPasswordPage />} />
