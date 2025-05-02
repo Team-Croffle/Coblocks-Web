@@ -7,6 +7,7 @@ import ClassroomPage from './pages/Classroom/ClassroomMainPage';
 import Profiler from './data/Dummy/Dummy-ProfilePage';
 import IntroContainer from './pages/Intro/IntroContainer'; // IntroContainer 컴포넌트 가져오기
 
+// eslint-disable-next-line
 const AppContent = () => {
   const location = useLocation(); // Router 내부에서 useLocation 호출
 
@@ -31,7 +32,7 @@ const AppContent = () => {
 const App = () => {
   return (
     <Router>
-      <AppContent />
+      <WorkSpace />
     </Router>
   );
 };
