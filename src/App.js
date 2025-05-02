@@ -5,7 +5,7 @@ import LoginPage from './pages/Login/LoginPage';
 import ForgotPasswordPage from './pages/ForgotPassword/ForgotPasswordPage';
 import ClassroomPage from './pages/Classroom/ClassroomMainPage';
 import Profiler from './data/Dummy/Dummy-ProfilePage';
-import IntroContainer from './pages/Intro/IntroContainer'; // IntroContainer 컴포넌트 가져오기
+import IntroContainer from './pages/intro/IntroContainer'; // IntroContainer 컴포넌트 가져오기
 
 // eslint-disable-next-line
 const AppContent = () => {
@@ -32,7 +32,7 @@ const AppContent = () => {
 const App = () => {
   return (
     <Router>
-      <WorkSpace />
+      <AppContent />
     </Router>
   );
 };
