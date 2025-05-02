@@ -5,7 +5,9 @@ import LoginPage from './Login/LoginPage';
 import ForgotPasswordPage from './ForgotPassword/ForgotPasswordPage';
 import ClassroomPage from './Classroom/ClassroomPage';
 import Profiler from '../Dummy/Dummy-ProfilePage';
+import WorkSpace from '../pages/mainPage/WorkSpace';
 
+// eslint-disable-next-line
 const AppContent = () => {
   const location = useLocation(); // Router 내부에서 useLocation 호출
 
@@ -34,7 +36,7 @@ const AppContent = () => {
 const App = () => {
   return (
     <Router>
-      <AppContent />
+      <WorkSpace />
     </Router>
   );
 };
