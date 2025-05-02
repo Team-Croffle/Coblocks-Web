@@ -1,10 +1,10 @@
-import translationKO from './locales/ko/translation.json';
-import translationEN from './locales/en/translation.json';
-import translationJA from './locales/ja/translation.json';
-import translationZH from './locales/zh/translation.json';
-import translationDE from './locales/de/translation.json';
-import translationFR from './locales/fr/translation.json';
-import translationES from './locales/es/translation.json';
+import translationKO from '@langs/locales/ko/translation.json';
+import translationEN from '@langs/locales/en/translation.json';
+import translationJA from '@langs/locales/ja/translation.json';
+import translationZH from '@langs/locales/zh/translation.json';
+import translationDE from '@langs/locales/de/translation.json';
+import translationFR from '@langs/locales/fr/translation.json';
+import translationES from '@langs/locales/es/translation.json';
 
 // 언어별 메타데이터와 번역 정보를 포함하는 객체
 const Translation = {

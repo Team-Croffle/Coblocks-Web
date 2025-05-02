@@ -2,16 +2,16 @@
   "env": {
     "node": true,
     "browser": true,
-    "es6": true,
+    "es2022": true,
   },
-  "extends": ["react-app", "eslint:recommended", "airbnb", "prettier"],
+  "extends": ["react-app", "eslint:recommended", "prettier"],
   "parser": "@babel/eslint-parser",
   "parserOptions": {
     "ecmaFeatures": {
-      "jsx": true
+      "jsx": true,
     },
     "ecmaVersion": "latest",
-    "sourceType": "module"
+    "sourceType": "module",
   },
   "rules": {
     "react/jsx-filename-extension": [1, { "extensions": [".js", ".jsx"] }],
@@ -19,21 +19,21 @@
       2,
       {
         "namedComponents": "arrow-function",
-        "unnamedComponents": "arrow-function"
-      }
+        "unnamedComponents": "arrow-function",
+      },
     ],
     "arrow-body-style": ["error", "always"],
     "no-var": "error",
     "no-multiple-empty-lines": "error",
     "eqeqeq": "error",
     "dot-notation": "error",
-    "no-unused-vars": "error"
+    "no-unused-vars": "error",
   },
   "settings": {
     "import/resolver": {
       "node": {
-        "extensions": [".js", ".jsx"]
-      }
-    }
-  }
+        "extensions": [".js", ".jsx"],
+      },
+    },
+  },
 }
