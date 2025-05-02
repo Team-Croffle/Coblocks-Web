@@ -1,11 +1,13 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import NavigationBar from '../components/layout/NavigationBar/NavigationBar';
-import LoginPage from './Login/LoginPage';
-import ForgotPasswordPage from './ForgotPassword/ForgotPasswordPage';
-import ClassroomPage from './Classroom/ClassroomPage';
-import Profiler from '../Dummy/Dummy-ProfilePage';
+import NavigationBar from './components/layout/NavigationBar/NavigationBar';
+import LoginPage from './pages/Login/LoginPage';
+import ForgotPasswordPage from './pages/ForgotPassword/ForgotPasswordPage';
+import ClassroomPage from './pages/Classroom/ClassroomMainPage';
+import Profiler from './data/Dummy/Dummy-ProfilePage';
+import IntroContainer from './pages/intro/IntroContainer'; // IntroContainer 컴포넌트 가져오기
 
+// eslint-disable-next-line
 const AppContent = () => {
   const location = useLocation(); // Router 내부에서 useLocation 호출
 
@@ -16,11 +18,7 @@ const AppContent = () => {
       <Routes>
         <Route
           path='/'
-          element={
-            <div style={{ textAlign: 'center', marginTop: '50px' }}>
-              <h1>Home Page</h1>
-            </div>
-          }
+          element={<IntroContainer />} // Home Page를 IntroContainer로 변경
         />
         <Route path='/login' element={<LoginPage />} />
         <Route path='/forgot-password' element={<ForgotPasswordPage />} />

@@ -8,7 +8,7 @@ import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import Button from 'react-bootstrap/Button';
 import Dropdown from 'react-bootstrap/Dropdown';
-import mainLogo from '../../../assets/images/mainlogo-bg-tp.png';
+import mainLogo from '../../../assets/images/Logo/mainlogo-bg-tp.png';
 
 const NavigationBar = () => {
   const { t } = useTranslation();

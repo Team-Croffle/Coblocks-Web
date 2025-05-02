@@ -1,0 +1,67 @@
+.carousel {
+  position: relative;
+  border-radius: 20px; /* 라운드 정도 조정 */
+  margin: 0 20%; /* 가운데 정렬 */
+}
+
+.carousel-indicators {
+  position: absolute;
+  bottom: 15px; /* 인디케이터 위치 조정 */
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0 auto;
+}
+
+.carousel-indicators [data-bs-target] {
+  background-color: #acb6c0; /* 인디케이터 색상 변경 */
+  width: 10px; /* 인디케이터 크기 조정 */
+  height: 10px;
+  border-radius: 50%;
+}
+
+.carousel-inner {
+  height: 350px; /* 높이 조정 */
+  overflow: hidden;
+  position: relative;
+}
+
+.carousel-item {
+  height: 100%;
+  width: 100%;
+}
+
+.carousel-caption {
+  height: 300px;
+  text-align: center;
+  color: black; /* 텍스트 색상 변경 */
+  background: rgb(254,249,251, 0.8); /* 배경색 변경 */
+  padding: 30px; /* 패딩 조정 */
+  border-radius: 15px; /* 라운드 정도 조정 */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 그림자 추가 */
+  user-select: none;
+}
+
+.carousel-caption h3 {
+  font-size: 2.5em; /* 제목 크기 조정 */
+  margin-bottom: 10px;
+}
+
+.carousel-caption p {
+  font-size: 1.5em; /* 단락 크기 조정 */
+}
+
+@media (max-width: 900px) {
+  .carousel {
+    margin: 0;
+  }
+
+  .carousel-caption {
+    height: 200px;
+  }
+  .carousel-caption h3 {
+    font-size: 1.5em;
+  }
+  .carousel-caption p {
+    font-size: 1em;
+  }
+}
