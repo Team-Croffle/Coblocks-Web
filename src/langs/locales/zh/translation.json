@@ -1,0 +1,23 @@
+{
+  "name": "简体中文",
+  "value": "zh",
+  "nav": {
+    "home": "首页",
+    "about": "关于",
+    "qna": "问答",
+    "login": "登录",
+    "logout": "退出",
+    "register": "注册",
+    "mypage": "我的页面",
+    "admin": "管理员",
+    "quest": "问题解决",
+    "beginner": "初级",
+    "intermediate": "中级",
+    "advanced": "高级",
+    "algorithm": "算法",
+    "classroom": "课堂",
+    "createClass": "创建课堂",
+    "joinClass": "加入课堂",
+    "classList": "课堂列表"
+  }
+}

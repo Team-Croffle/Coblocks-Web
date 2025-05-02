@@ -1,0 +1,34 @@
+
+  
+  .contactContainer span {
+    display: block;
+    text-align: center;
+    margin-bottom: 20px;
+    color: #555;
+  }
+  
+.contactListContainer{
+      background-color: #f0f0f0;
+      border-radius: 20px;
+
+}
+
+  .contactListHeader ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    border-radius: 5px 5px 0 0;
+  }
+  
+  .contactListHeader {
+    font-weight: bold;
+  }
+
+  .formContainer {
+    margin-top: 20px;
+    padding: 20px;
+    border-radius: 0 0 5px 5px;
+  }

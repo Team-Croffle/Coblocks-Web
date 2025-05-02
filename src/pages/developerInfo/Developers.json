@@ -1,0 +1,56 @@
+ 
+ {
+  "developers" : [
+    {
+      "name": "정윤성",
+      "school": "원광대학교",
+      "major": "컴퓨터소프트웨어공학과",
+      "studentId": "20200560",
+      "github": "https://github.com/Jung-YoonSeong",
+      "insta": "https://www.instagram.com/yoon_00s/",
+      "email": "abluehour@mail.croffledev.kr",
+      "mbti": "isfp"
+    },
+    {
+      "name": "안규태",
+      "school": "원광대학교",
+      "major": "컴퓨터소프트웨어공학과",
+      "studentId": "****",
+      "github": "https://github.com/BlueNyang",
+      "insta": "https://www.instagram.com/bluenyang2251/",
+      "email": "bluenyang@mail.croffledev.kr",
+      "mbti": "infp"
+    },
+    {
+      "name": "김지훈",
+      "school": "원광대학교",
+      "major": "컴퓨터소프트웨어공학과",
+      "studentId": "****",
+      "github": "https://github.com/dudadab",
+      "insta": "https://www.instagram.com/j.hun__k/",
+      "email": "duda@mail.croffledev.kr",
+      "mbti": "intp"
+    },
+    {
+      "name": "이세중",
+      "school": "원광대학교",
+      "major": "컴퓨터소프트웨어공학과",
+      "studentId": "***",
+      "github": "https://github.com/sejung2",
+      "insta": "https://www.instagram.com/yoonseong_jeong/",
+      "email": "seing@mail.croffledev.kr",
+      "mbti": "isfj"
+    },
+    {
+      "name": "김해성",
+      "school": "원광대학교",
+      "major": "컴퓨터소프트웨어공학과",
+      "studentId": "***",
+      "github": "https://github.com/4***",
+      "insta": "https://www.instagram.com/yoonseong_jeong/",
+      "email": "unbaen@mail.croffledev.kr",
+      "mbti": "entp"
+    }
+  ]
+}
+
