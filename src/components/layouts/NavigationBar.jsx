@@ -4,7 +4,7 @@ import { AiOutlineUser, AiFillHome } from 'react-icons/ai';
 import { FaSchool } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
 import { Container, Nav, Navbar, Button, Dropdown } from 'react-bootstrap';
-import mainLogo from '@images/logo/mainlogo-bg-tp.png';
+import mainLogo from '@images/Logo/mainlogo-bg-tp.png';
 import supabase from '@utils/supabase'; // Supabase client import
 
 const NavigationBar = () => {
