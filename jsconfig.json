@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "types": ["vite/client"],
+    "baseUrl": "src",
+    "paths": {
+      "@/*": ["*"],
+      "@pages/*": ["pages/*"],
+      "@layouts/*": ["components/layouts/*"],
+      "@modules/*": ["components/modules/*"],
+      "@assets/*": ["assets/*"],
+      "@images/*": ["assets/images/*"],
+      "@fonts/*": ["assets/fonts/*"],
+      "@styles/*": ["assets/styles/*"],
+      "@utils/*": ["utils/*"],
+      "@hooks/*": ["hooks/*"],
+      "@langs/*": ["langs/*"],
+    }
+  }
+}
