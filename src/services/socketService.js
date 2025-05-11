@@ -1,3 +1,4 @@
+import { getSupabaseAccessToken } from '@/utils/supabase';
 import { io } from 'socket.io-client';
 
 // 웹 소켓을 사용하여 실시간 통신을 구현하는 클래스입니다.
@@ -8,7 +9,8 @@ class Socket {
   }
 
   setupSocket = () => {
-    const supabase_access_token = localStorage.getItem(`sb-${import.meta.env.VITE_SUPABASE_ID}-auth-token`);
+    const supabase_access_token = getSupabaseAccessToken();
+    console.log('supabase_access_token', supabase_access_token);
     this.socket = io(import.meta.env.VITE_API_URL, {
       auth: {
         token: supabase_access_token.access_token,
@@ -29,7 +31,7 @@ class Socket {
   */
   setupClassroom = (currentClassroomInfo) => {
     // 현재 교실 ID와 정보를 초기화합니다.
-    if (this.currentClassroomInfo) {
+    if (!this.currentClassroomInfo) {
       this.currentClassroomInfo = currentClassroomInfo;
     } else {
       // 현재 교실 ID와 정보가 유효하지 않은 경우 오류를 발생시킵니다.

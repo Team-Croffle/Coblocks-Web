@@ -24,7 +24,7 @@ const ClassroomContextProvider = ({ children }) => {
   const socketClose = useCallback(() => {
     if (socket) {
       socket.closeSocket();
-      setSocket(null); // 필요하다면 chatContext, participants도 초기화
+      setSocket();
       // setChatContext([]);
       // setParticipants([]);
       if (import.meta.env.VITE_RUNNING_MODE === 'development') {
@@ -91,6 +91,7 @@ const ClassroomContextProvider = ({ children }) => {
     //  timestamp: '메시지 수신 시간'
     // }
     const handleClassroomMessage = (data) => {
+      console.log('Received CLASSROOM_MESSAGE:', data);
       if (import.meta.env.VITE_RUNNING_MODE === 'development') {
         console.log('Received CLASSROOM_MESSAGE:', data);
       }
@@ -219,9 +220,9 @@ const ClassroomContextProvider = ({ children }) => {
       }
       // 등록된 모든 이벤트 리스너 제거
       newSocket.off('connect', handleConnect);
-      newSocket.off(socketEvents.DISCONNECT, handleDisconnect);
+      newSocket.off(socketEvents.DISCONNECT, (reson) => handleDisconnect(reson));
       newSocket.off(socketEvents.ERROR, handleError);
-      newSocket.off(socketEvents.CLASSROOM_MESSAGE, handleClassroomMessage);
+      newSocket.off(socketEvents.CLASSROOM_MESSAGE, (data) => handleClassroomMessage(data));
       newSocket.off(socketEvents.JOIN_CLASSROOM_SUCCESS, handleJoinClassroomSuccess);
       newSocket.off(socketEvents.USER_JOINED_CLASSROOM, handleUserJoinedClassroom);
       newSocket.off(socketEvents.USER_LEFT_CLASSROOM, handleUserLeftClassroom);
@@ -229,7 +230,7 @@ const ClassroomContextProvider = ({ children }) => {
       newSocket.closeSocket(); // 소켓 연결 종료
       setSocket(null); // 상태에서 소켓 인스턴스 참조 제거
     };
-  }, [classroomInfo, socket, socketClose]); // socket과 socketClose를 의존성 배열에 추가 (useCallback으로 메모이즈 되었으므로 안전)
+  }, []); // socket과 socketClose를 의존성 배열에 추가 (useCallback으로 메모이즈 되었으므로 안전)
 
   // Provider value 최적화: context value 객체가 불필요하게 재생성되는 것을 방지
   const contextValue = useMemo(

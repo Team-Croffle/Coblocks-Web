@@ -4,13 +4,14 @@ import { FaRegPenToSquare } from 'react-icons/fa6'; // 강의실 개설 아이�
 import { MdExitToApp } from 'react-icons/md'; // 강의실 접속 아이콘 추가
 import { FaSchool } from 'react-icons/fa'; // 강의실 아이콘 추가
 import { useNavigate } from 'react-router-dom';
+import { getSupabaseAccessToken } from '@utils/supabase';
 
 const ClassroomPage = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [classroomName, setClassroomName] = useState('');
   const [inviteCode, setInviteCode] = useState('');
-  const navigate = useNavigate;
+  const navigate = useNavigate();
 
   const handleOpenCreateModal = () => {
     setShowCreateModal(true);
@@ -31,7 +32,7 @@ const ClassroomPage = () => {
   };
 
   const handleCreateClassroom = async () => {
-    const supabase_access_token = localStorage.getItem(`sb-${import.meta.env.VITE_SUPABASE_ID}-auth-token`);
+    const supabase_access_token = await getSupabaseAccessToken();
     if (!supabase_access_token) {
       alert('로그인이 필요합니다.');
       navigate('/login');
@@ -48,13 +49,12 @@ const ClassroomPage = () => {
           classroom_name: classroomName,
         }),
       });
-      console.log('Response:', response);
       const data = await response.json();
       if (data.success && data.classroom) {
         const newClassroomInfo = data.classroom;
         localStorage.setItem('currentClassroomInfo', JSON.stringify(newClassroomInfo));
-        navigate('/classroom');
         handleCloseCreateModal();
+        navigate('/classroom');
       }
     } catch (error) {
       if (import.meta.env.VITE_RUNNING_MODE === 'development') {

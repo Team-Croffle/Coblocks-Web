@@ -6,6 +6,8 @@ import { Button, Container, Row, Col, Card, Form, ListGroup, InputGroup } from '
 import BlocklyEditor from '@modules/blockly/BlocklyEditor';
 import { useClassroom } from '@/contexts/ClassroomContext';
 import socketEvents from '@data/socketEvents'; // 소켓 이벤트 상수
+import { getSupabaseAccessToken } from '@/utils/supabase';
+import { useNavigate } from 'react-router-dom';
 
 const ClassroomPage = () => {
   const [groups, setGroups] = useState([]); // 그룹 목록
@@ -13,6 +15,7 @@ const ClassroomPage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // 왼쪽 패널 (처음엔 숨김)
   const blocklyEditorRef = useRef(null);
   const chatInputRef = useRef(null); // 채팅 입력 필드 참조
+  const navigate = useNavigate();
 
   const {
     socket,
@@ -39,6 +42,12 @@ const ClassroomPage = () => {
   };
 
   useEffect(() => {
+    console.log('socket:', socket);
+    console.log('chat:', chat);
+    console.log('participants:', participants);
+    console.log('classroomInfo:', classroomInfo);
+    console.log('isManager:', isManager);
+
     if (socket && classroomInfo?.classroom_id) {
       socket.emit(socketEvents.JOIN_CLASSROOM, {
         classroomDetails: classroomInfo,
@@ -54,7 +63,7 @@ const ClassroomPage = () => {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [socket, classroomInfo?.classroom_id]);
+  }, []);
 
   // 강의실 나가기 처리
   const handleLeaveClass = () => {
@@ -63,6 +72,7 @@ const ClassroomPage = () => {
         classroomId: classroomInfo.classroom_id,
       });
     }
+    navigate('/classroom-main'); // 강의실 나가기 후 메인 페이지로 이동
   };
 
   // 그룹 생성 처리
@@ -114,7 +124,7 @@ const ClassroomPage = () => {
   const handleSendChatMessage = useCallback(
     (messageText) => {
       if (messageText.trim() !== '' && socket && classroomInfo?.classroom_id) {
-        socket.emit(socketEvents.CLASSROOM_MESSAGE, { message: messageText }); // Context와 동일한 이벤트 사용
+        socket.emit(socketEvents.SEND_MESSAGE, { message: messageText }); // Context와 동일한 이벤트 사용
         if (chatInputRef.current) {
           chatInputRef.current.value = ''; // 입력창 비우기
         }
@@ -251,7 +261,6 @@ const ClassroomPage = () => {
           <Button
             variant='primary'
             onClick={() => handleSendChatMessage(chatInputRef.current.value)}
-            disabled={!chatInputRef.current?.value} // 입력값이 없으면 비활성화
           >
             전송
           </Button>
