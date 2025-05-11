@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
-import ClassroomContextProvider from '@contexts/ClassroomContext';
+import ClassroomContextProvider from '@contexts/ClassroomContextProvider';
 
 const ClassroomLayout = () => {
   return (

@@ -3,7 +3,7 @@ import { Button, Container, Modal, Form, Row, Col, Card } from 'react-bootstrap'
 import { FaRegPenToSquare } from 'react-icons/fa6'; // 강의실 개설 아이콘
 import { MdExitToApp } from 'react-icons/md'; // 강의실 접속 아이콘 추가
 import { FaSchool } from 'react-icons/fa'; // 강의실 아이콘 추가
-import { useClassroom } from '@/contexts/ClassroomContextProvider';
+import { useClassroom } from '@/contexts/ClassroomContext';
 import { useNavigate } from 'react-router-dom';
 import socketEvents from '@/data/socketEvents';
 

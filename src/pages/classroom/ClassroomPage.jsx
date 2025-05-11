@@ -1,15 +1,27 @@
 /* eslint-disable no-unused-vars */
 import React, { useState, useRef } from 'react';
+import { FaBars } from 'react-icons/fa';
+import { BsChevronBarLeft } from 'react-icons/bs';
 import { Button, Container, Row, Col, Card, Form, ListGroup, InputGroup } from 'react-bootstrap';
 import BlocklyEditor from '@modules/blockly/BlocklyEditor';
+import { useClassroom } from '@/contexts/ClassroomContextProvider';
 
 const ClassroomPage = () => {
   const [groups, setGroups] = useState([]); // 그룹 목록
   const [newGroupName, setNewGroupName] = useState(''); // 새 그룹 이름
-  const [students] = useState(['학생1', '학생2', '학생3']); // 학생 목록
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // 왼쪽 패널 (처음엔 숨김)
-  const inviteCode = 'ABC123'; // 초대 코드
   const blocklyEditorRef = useRef(null);
+
+  const {
+    socket,
+    chat, // 채팅 관련 데이터
+    participants, // 참가자 목록
+    classroomInfo, // 강의실 정보
+    setClassroomInfo, // 강의실 정보 설정 함수
+    socketClose, // 소켓을 명시적으로 닫아야 할 때 사용
+  } = useClassroom();
+
+  const inviteCode = classroomInfo.classroom_code;
 
   const blocklyEditorZoomOptions = {
     zoom: {
@@ -78,7 +90,7 @@ const ClassroomPage = () => {
               <div className='mb-5 mt-4'>
                 <h4>학생 목록</h4>
                 <ListGroup className='mt-3'>
-                  {students.map((student) => {
+                  {participants.map((student) => {
                     return <ListGroup.Item key={student}>{student}</ListGroup.Item>;
                   })}
                 </ListGroup>
@@ -117,7 +129,7 @@ const ClassroomPage = () => {
               }}
               style={{ position: 'absolute', top: '1rem', right: '1rem', zIndex: 1000 }}
             >
-              ◀
+              <BsChevronBarLeft />
             </Button>
           </Col>
         )}
@@ -154,7 +166,7 @@ const ClassroomPage = () => {
               }}
               style={{ position: 'absolute', top: '1rem', left: '1rem', zIndex: 1000 }}
             >
-              ▶
+              <FaBars />
             </Button>
           )}
         </Col>

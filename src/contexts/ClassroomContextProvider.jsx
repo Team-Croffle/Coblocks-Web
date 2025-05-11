@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Socket from '@services/socketService'; // Socket 클래스 이름 확인 필요
 import socketEvents from '@data/socketEvents'; // socketEvents 경로가 올바른지 확인해주세요.
+import { ClassroomContext } from './ClassroomContext'; // ClassroomContext 경로 확인 필요
 
 const ClassroomContextProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
