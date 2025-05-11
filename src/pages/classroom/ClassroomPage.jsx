@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+/* eslint-disable no-unused-vars */
+import React, { useState, useRef } from 'react';
 import { Button, Container, Row, Col, Card, Form, ListGroup, InputGroup } from 'react-bootstrap';
+import BlocklyEditor from '@modules/blockly/BlocklyEditor';
 
 const ClassroomPage = () => {
   const [groups, setGroups] = useState([]); // 그룹 목록
@@ -7,6 +9,19 @@ const ClassroomPage = () => {
   const [students] = useState(['학생1', '학생2', '학생3']); // 학생 목록
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // 왼쪽 패널 (처음엔 숨김)
   const inviteCode = 'ABC123'; // 초대 코드
+  const blocklyEditorRef = useRef(null);
+
+  const blocklyEditorZoomOptions = {
+    zoom: {
+      enabled: true,
+      controls: false,
+      wheel: true,
+      startScale: 0.8,
+      maxScale: 2.4,
+      minScale: 0.3,
+      scaleSpeed: 1.2,
+    },
+  };
 
   // 강의실 나가기 처리
   const handleLeaveClass = () => {
@@ -23,6 +38,28 @@ const ClassroomPage = () => {
       });
       setNewGroupName('');
     }
+  };
+
+  const handleSave = () => {
+    // ref.current를 통해 BlocklyEditor 컴포넌트의 함수에 접근
+    const xml = blocklyEditorRef.current.getXml();
+    console.log('Current Blockly XML:', xml);
+
+    // Serialization 상태 가져오기 (최신 방식)
+    const state = blocklyEditorRef.current.getSerializationState();
+    console.log('Current Blockly State (Serialization):', JSON.stringify(state));
+
+    // 이 XML 또는 state를 서버로 전송하거나 로컬 스토리지에 저장
+  };
+
+  const handleLoad = () => {
+    // 저장된 XML 또는 상태 객체를 불러와 로드
+    const savedXml = '<xml>...</xml>'; // 불러온 XML 문자열
+    blocklyEditorRef.current.loadXml(savedXml);
+
+    // 저장된 Serialization 상태 객체 (JSON 파싱된 상태)
+    // const savedState = { ... };
+    // blocklyEditorRef.current.loadSerializationState(savedState);
   };
 
   return (
@@ -92,11 +129,21 @@ const ClassroomPage = () => {
         >
           <h2 className='mb-4'>강의실</h2>
 
-          <Card className='w-100 h-75 d-flex align-items-center justify-content-center bg-light'>
-            <Card.Body>
-              <Card.Text className='text-center text-muted'>화면 공유 중...</Card.Text>
-            </Card.Body>
-          </Card>
+          <div
+            className='editor-container'
+            style={{ height: '500px', width: '80%', margin: '20px auto', border: '1px solid #ccc' }}
+          >
+            <BlocklyEditor
+              readOnly={false} // 편집 가능 여부
+              ref={blocklyEditorRef}
+              // initialXml="<xml><block type='controls_if' x='50' y='50'></block></xml>" // 초기 블록 로드 (선택 사항)
+              onWorkspaceChange={(xmlString) => {
+                // 워크스페이스 변경 시마다 콜백 받기 (예: 실시간 공유를 위해 WebSocket으로 전송)
+                console.log('Workspace changed (XML):', xmlString);
+              }}
+              blocklyOptions={blocklyEditorZoomOptions}
+            />
+          </div>
 
           {/* 왼쪽 패널 열기 버튼 (초기 표시됨) */}
           {!isSidebarOpen && (

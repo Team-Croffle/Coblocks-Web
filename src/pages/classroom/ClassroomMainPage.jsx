@@ -3,6 +3,9 @@ import { Button, Container, Modal, Form, Row, Col, Card } from 'react-bootstrap'
 import { FaRegPenToSquare } from 'react-icons/fa6'; // 강의실 개설 아이콘
 import { MdExitToApp } from 'react-icons/md'; // 강의실 접속 아이콘 추가
 import { FaSchool } from 'react-icons/fa'; // 강의실 아이콘 추가
+import { useClassroom } from '@/contexts/ClassroomContextProvider';
+import { useNavigate } from 'react-router-dom';
+import socketEvents from '@/data/socketEvents';
 
 const ClassroomPage = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -10,6 +13,12 @@ const ClassroomPage = () => {
   const [classroomName, setClassroomName] = useState('');
   const [maxParticipants, setMaxParticipants] = useState(0);
   const [inviteCode, setInviteCode] = useState('');
+  const navigate = useNavigate;
+  // useClassroom 훅을 사용하여 ClassroomContext의 값들을 가져옵니다.
+  const {
+    socket,
+    setClassroomInfo, // 소켓을 명시적으로 닫아야 할 때 사용
+  } = useClassroom();
 
   const handleOpenCreateModal = () => {
     setShowCreateModal(true);
@@ -28,6 +37,88 @@ const ClassroomPage = () => {
   const handleCloseJoinModal = () => {
     setShowJoinModal(false);
     setInviteCode('');
+  };
+
+  const handleCreateClassroom = async () => {
+    const supabase_access_token = localStorage.getItem(`sb-${import.meta.env.VITE_SUPABASE_ID}-auth-token`);
+    if (!supabase_access_token) {
+      alert('로그인이 필요합니다.');
+      navigate('/login');
+      return;
+    }
+    try {
+      const response = await fetch(`${import.meta.env.VITE_URL_API}/api/classrooms`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${supabase_access_token}`,
+        },
+        body: JSON.stringify({
+          name: classroomName,
+          max_participants: maxParticipants,
+        }),
+      });
+      const data = await response.json();
+      if (data.success && data.classroom) {
+        const newClassroomInfo = data.classroom;
+        localStorage.setItem('currentClassroomInfo', JSON.stringify(newClassroomInfo));
+        setClassroomInfo();
+        socket.setupSocket(); // 소켓을 설정합니다.
+        socket.setupClassroom(newClassroomInfo); // 소켓에 강의실 정보를 설정합니다.
+        socket.emit(socketEvents.JOIN_CLASSROOM, {
+          classroomDetails: newClassroomInfo,
+        }); // 강의실에 참여합니다.
+      }
+      navigate('/classroom');
+      handleCloseCreateModal();
+    } catch (error) {
+      if (import.meta.env.VITE_RUNNING_MODE === 'development') {
+        console.error('Error creating classroom:', error);
+      }
+      alert('강의실 생성 중 오류가 발생했습니다.');
+    }
+  };
+
+  const handleJoinClassroom = async () => {
+    setInviteCode((prev) => prev.trim().toUpperCase());
+    if (!inviteCode) {
+      alert('초대 코드를 입력하세요.');
+      return;
+    }
+    const supabase_access_token = localStorage.getItem(`sb-${import.meta.env.VITE_SUPABASE_ID}-auth-token`);
+    if (!supabase_access_token) {
+      alert('로그인이 필요합니다.');
+      navigate('/login');
+      return;
+    }
+    try {
+      const response = await fetch(`${import.meta.env.VITE_URL_API}/api/classrooms/join`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${supabase_access_token}`,
+        },
+        body: JSON.stringify({ inviteCode }),
+      });
+      const data = await response.json();
+      if (response.ok && data.success && data.classroom) {
+        const newClassroomInfo = data.classroom;
+        localStorage.setItem('currentClassroomInfo', JSON.stringify(newClassroomInfo));
+        setClassroomInfo();
+        socket.setupSocket(); // 소켓을 설정합니다.
+        socket.setupClassroom(newClassroomInfo); // 소켓에 강의실 정보를 설정합니다.
+        socket.emit(socketEvents.JOIN_CLASSROOM, {
+          classroomDetails: newClassroomInfo,
+        }); // 강의실에 참여합니다.
+      }
+      navigate('/classroom');
+      handleCloseJoinModal();
+    } catch (error) {
+      if (import.meta.env.VITE_RUNNING_MODE === 'development') {
+        console.error('Error joining classroom:', error);
+      }
+      alert('강의실 접속 중 오류가 발생했습니다.');
+    }
   };
 
   return (
@@ -103,18 +194,22 @@ const ClassroomPage = () => {
                 onChange={(e) => {
                   setClassroomName(e.target.value);
                 }}
+                required
               />
             </Form.Group>
-            <Form.Group controlId='maxParticipants' className='mt-3'>
+            <Form.Group
+              controlId='maxParticipants'
+              className='mt-3'
+            >
               <Form.Label>최대 인원</Form.Label>
               <Form.Control
                 type='number'
                 min='0'
-                placeholder='최대 인원을 입력하세요'
-                value={maxParticipants}
+                placeholder='최대 인원(개발 중)'
                 onChange={(e) => {
                   setMaxParticipants(Number(e.target.value));
                 }}
+                disabled={true}
               />
             </Form.Group>
           </Form>
@@ -130,9 +225,7 @@ const ClassroomPage = () => {
           </Button>
           <Button
             variant='primary'
-            onClick={() => {
-              alert('강의실 생성');
-            }}
+            onClick={handleCreateClassroom}
           >
             생성
           </Button>
@@ -176,9 +269,8 @@ const ClassroomPage = () => {
           </Button>
           <Button
             variant='primary'
-            onClick={() => {
-              alert(`입력된 초대 코드/URL: ${inviteCode}`);
-            }}
+            onClick={handleJoinClassroom}
+            disabled={!inviteCode}
           >
             접속
           </Button>

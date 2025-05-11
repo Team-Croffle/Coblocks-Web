@@ -6,6 +6,8 @@ import ForgotPasswordPage from '@pages/auth/ForgotPasswordPage';
 import ResetPasswordPage from '@pages/auth/ResetPasswordPage';
 import ClassroomMainPage from '@pages/classroom/ClassroomMainPage';
 import IntroContainer from '@pages/intro/IntroContainer'; // IntroContainer 컴포넌트 가져오기
+import ClassroomPage from '@pages/classroom/ClassroomMainPage';
+import ClassroomLayout from './components/layouts/ClassroomLayout';
 
 const AppContent = () => {
   const location = useLocation(); // Router 내부에서 useLocation 호출
@@ -31,10 +33,16 @@ const AppContent = () => {
           element={<ResetPasswordPage />}
         />
 
-        <Route
-          path='/classroom'
-          element={<ClassroomMainPage />}
-        />
+        <Route element={<ClassroomLayout />}>
+          <Route
+            path='/classroom-main'
+            element={<ClassroomMainPage />}
+          />
+          <Route
+            path='/classroom'
+            element={<ClassroomPage />}
+          />
+        </Route>
         <Route
           path='/profile'
           element={
