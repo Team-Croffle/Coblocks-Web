@@ -61,7 +61,7 @@ class Socket {
     }
   }
 
-  // on 메서드를 사용하여 서버로부터 메시지를 수신합니다.
+  // on 메서드를 사용하여 서버로부터 메시지 수신 시 처리합니다.
   on(event, callback) {
     // 소켓이 유효한지 확인합니다.
     if (this.socket) {
@@ -72,6 +72,19 @@ class Socket {
       throw new Error('Socket is not initialized');
     }
   }
+
+  // off 메서드를 사용하여 서버로부터 메시지 수신 시 처리하지 않도록 설정합니다.
+  off(event, callback) {
+    // 소켓이 유효한지 확인합니다.
+    if (this.socket) {
+      // 소켓을 통해 서버로부터 메시지를 수신합니다.
+      this.socket.off(event, callback);
+    } else {
+      // 소켓이 유효하지 않은 경우 오류를 발생시킵니다.
+      throw new Error('Socket is not initialized');
+    }
+  }
+
   /*
   // 소켓을 초기화합니다.
   setupSocketListeners(socketInstance) {

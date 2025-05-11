@@ -7,6 +7,7 @@ const ClassroomContextProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
   const [chatContext, setChatContext] = useState([]);
   const [participants, setParticipants] = useState([]);
+  const [isManager, setIsManager] = useState(false); // 강의실 관리자 여부
   // localStorage에서 초기 classroomInfo를 가져와 상태로 관리
   const [classroomInfo, setClassroomInfo] = useState(() => {
     const storedInfo = localStorage.getItem('currentClassroomInfo');
@@ -105,12 +106,13 @@ const ClassroomContextProvider = ({ children }) => {
     // 서버에서 JOIN_CLASSROOM_SUCCESS 이벤트를 수신했을 때의 처리
     // response : {
     //  success: true,
-    //  users: [참여자 목록],
     //  classroom: {
     //    classroom_id: '강의실 ID',
     //    name: '강의실 이름',
     //    max_participants: '최대 참여자 수'
     //  }
+    //  users: [참여자 목록],
+    //  isManager: true/false // 현재 사용자가 강의실 관리자 여부
     // }
     // response.users는 참여자 목록, response.classroom은 강의실 정보
     const handleJoinClassroomSuccess = (response) => {
@@ -121,6 +123,7 @@ const ClassroomContextProvider = ({ children }) => {
         setParticipants(response.users); // 참여자 목록 업데이트
         // classroomInfo 상태를 서버에서 받은 최신 정보로 업데이트 할 수도 있음
         // setClassroomInfo(response.classroom);
+        setIsManager(response.isManager); // 강의실 관리자 여부 업데이트
       } else {
         if (import.meta.env.VITE_RUNNING_MODE === 'development') {
           console.error('Failed to join classroom via socket:', response.message);
@@ -235,10 +238,11 @@ const ClassroomContextProvider = ({ children }) => {
       chat: chatContext, // chatContext 대신 chat으로 이름 변경 (일관성)
       participants,
       classroomInfo,
+      isManager,
       setClassroomInfo, // 외부에서 classroomInfo를 변경할 수 있도록 함수 제공 (예: 강의실 나가기, 다른 강의실 선택)
       socketClose, // 소켓을 명시적으로 닫아야 할 때 사용
     }),
-    [socket, chatContext, participants, classroomInfo, setClassroomInfo, socketClose], // setClassroomInfo도 의존성 배열에 추가
+    [socket, chatContext, participants, classroomInfo, isManager, setClassroomInfo, socketClose], // setClassroomInfo도 의존성 배열에 추가
   );
 
   return <ClassroomContext.Provider value={contextValue}>{children}</ClassroomContext.Provider>;

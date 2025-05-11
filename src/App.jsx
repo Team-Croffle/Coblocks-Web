@@ -4,9 +4,9 @@ import NavigationBar from '@layouts/NavigationBar';
 import AuthPage from '@pages/auth/AuthPage';
 import ForgotPasswordPage from '@pages/auth/ForgotPasswordPage';
 import ResetPasswordPage from '@pages/auth/ResetPasswordPage';
-import ClassroomMainPage from '@pages/classroom/ClassroomMainPage';
 import IntroContainer from '@pages/intro/IntroContainer'; // IntroContainer 컴포넌트 가져오기
-import ClassroomPage from '@pages/classroom/ClassroomMainPage';
+import ClassroomMainPage from '@pages/classroom/ClassroomMainPage';
+import ClassroomPage from '@pages/classroom/ClassroomPage';
 import ClassroomLayout from './components/layouts/ClassroomLayout';
 
 const AppContent = () => {
@@ -32,17 +32,18 @@ const AppContent = () => {
           path='/reset-password'
           element={<ResetPasswordPage />}
         />
+        <Route
+          path='/classroom-main'
+          element={<ClassroomMainPage />}
+        />
 
         <Route element={<ClassroomLayout />}>
-          <Route
-            path='/classroom-main'
-            element={<ClassroomMainPage />}
-          />
           <Route
             path='/classroom'
             element={<ClassroomPage />}
           />
         </Route>
+
         <Route
           path='/profile'
           element={

@@ -3,22 +3,14 @@ import { Button, Container, Modal, Form, Row, Col, Card } from 'react-bootstrap'
 import { FaRegPenToSquare } from 'react-icons/fa6'; // 강의실 개설 아이콘
 import { MdExitToApp } from 'react-icons/md'; // 강의실 접속 아이콘 추가
 import { FaSchool } from 'react-icons/fa'; // 강의실 아이콘 추가
-import { useClassroom } from '@/contexts/ClassroomContext';
 import { useNavigate } from 'react-router-dom';
-import socketEvents from '@/data/socketEvents';
 
 const ClassroomPage = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [classroomName, setClassroomName] = useState('');
-  const [maxParticipants, setMaxParticipants] = useState(0);
   const [inviteCode, setInviteCode] = useState('');
   const navigate = useNavigate;
-  // useClassroom 훅을 사용하여 ClassroomContext의 값들을 가져옵니다.
-  const {
-    socket,
-    setClassroomInfo, // 소켓을 명시적으로 닫아야 할 때 사용
-  } = useClassroom();
 
   const handleOpenCreateModal = () => {
     setShowCreateModal(true);
@@ -27,7 +19,6 @@ const ClassroomPage = () => {
   const handleCloseCreateModal = () => {
     setShowCreateModal(false);
     setClassroomName('');
-    setMaxParticipants(0);
   };
 
   const handleOpenJoinModal = () => {
@@ -47,30 +38,24 @@ const ClassroomPage = () => {
       return;
     }
     try {
-      const response = await fetch(`${import.meta.env.VITE_URL_API}/api/classrooms`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/classrooms`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${supabase_access_token}`,
         },
         body: JSON.stringify({
-          name: classroomName,
-          max_participants: maxParticipants,
+          classroom_name: classroomName,
         }),
       });
+      console.log('Response:', response);
       const data = await response.json();
       if (data.success && data.classroom) {
         const newClassroomInfo = data.classroom;
         localStorage.setItem('currentClassroomInfo', JSON.stringify(newClassroomInfo));
-        setClassroomInfo();
-        socket.setupSocket(); // 소켓을 설정합니다.
-        socket.setupClassroom(newClassroomInfo); // 소켓에 강의실 정보를 설정합니다.
-        socket.emit(socketEvents.JOIN_CLASSROOM, {
-          classroomDetails: newClassroomInfo,
-        }); // 강의실에 참여합니다.
+        navigate('/classroom');
+        handleCloseCreateModal();
       }
-      navigate('/classroom');
-      handleCloseCreateModal();
     } catch (error) {
       if (import.meta.env.VITE_RUNNING_MODE === 'development') {
         console.error('Error creating classroom:', error);
@@ -104,12 +89,6 @@ const ClassroomPage = () => {
       if (response.ok && data.success && data.classroom) {
         const newClassroomInfo = data.classroom;
         localStorage.setItem('currentClassroomInfo', JSON.stringify(newClassroomInfo));
-        setClassroomInfo();
-        socket.setupSocket(); // 소켓을 설정합니다.
-        socket.setupClassroom(newClassroomInfo); // 소켓에 강의실 정보를 설정합니다.
-        socket.emit(socketEvents.JOIN_CLASSROOM, {
-          classroomDetails: newClassroomInfo,
-        }); // 강의실에 참여합니다.
       }
       navigate('/classroom');
       handleCloseJoinModal();
@@ -206,8 +185,8 @@ const ClassroomPage = () => {
                 type='number'
                 min='0'
                 placeholder='최대 인원(개발 중)'
-                onChange={(e) => {
-                  setMaxParticipants(Number(e.target.value));
+                onChange={() => {
+                  // setMaxParticipants(e.target.value);
                 }}
                 disabled={true}
               />
