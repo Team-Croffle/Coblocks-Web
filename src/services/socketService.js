@@ -1,21 +1,36 @@
-import { getSupabaseAccessToken } from '@/utils/supabase';
+import supabase, { getSupabaseAccessToken } from '@utils/supabase';
 import { io } from 'socket.io-client';
 
 // 웹 소켓을 사용하여 실시간 통신을 구현하는 클래스입니다.
 class Socket {
   constructor() {
+    this.supabase = supabase;
     this.socket = null; // 소켓 인스턴스를 초기화합니다.
     this.currentClassroomInfo = null; // 현재 강의실 정보를 초기화합니다.
   }
 
-  setupSocket = () => {
-    const supabase_access_token = getSupabaseAccessToken();
-    console.log('supabase_access_token', supabase_access_token);
-    this.socket = io(import.meta.env.VITE_API_URL, {
-      auth: {
-        token: supabase_access_token.access_token,
-      },
-    });
+  setupSocket = async () => {
+    try {
+      const supabase_access_token = await getSupabaseAccessToken(this.supabase);
+      if (import.meta.env.MODE === 'development') {
+        console.log('supabase_access_token', supabase_access_token);
+      }
+
+      if (!supabase_access_token) {
+        throw new Error('Supabase access token is not available');
+      }
+
+      this.socket = io(import.meta.env.VITE_API_URL, {
+        auth: {
+          token: supabase_access_token,
+        },
+      });
+
+      return this.socket;
+    } catch (error) {
+      console.error('Error setting up socket:', error);
+      throw error;
+    }
   };
 
   // 소켓을 설정하고, 현재 강의실 정보를 초기화합니다.

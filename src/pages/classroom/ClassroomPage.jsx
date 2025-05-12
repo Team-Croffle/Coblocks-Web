@@ -12,7 +12,7 @@ import { useNavigate } from 'react-router-dom';
 const ClassroomPage = () => {
   const [groups, setGroups] = useState([]); // 그룹 목록
   const [newGroupName, setNewGroupName] = useState(''); // 새 그룹 이름
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // 왼쪽 패널 (처음엔 숨김)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true); // 왼쪽 패널 (처음엔 숨김)
   const blocklyEditorRef = useRef(null);
   const chatInputRef = useRef(null); // 채팅 입력 필드 참조
   const navigate = useNavigate();
@@ -42,26 +42,27 @@ const ClassroomPage = () => {
   };
 
   useEffect(() => {
-    console.log('socket:', socket);
-    console.log('chat:', chat);
-    console.log('participants:', participants);
-    console.log('classroomInfo:', classroomInfo);
-    console.log('isManager:', isManager);
+    //console.log('socket:', socket);
+    //console.log('chat:', chat);
+    //console.log('participants:', participants);
+    //console.log('classroomInfo:', classroomInfo);
+    //console.log('isManager:', isManager);
 
-    if (socket && classroomInfo?.classroom_id) {
-      socket.emit(socketEvents.JOIN_CLASSROOM, {
-        classroomDetails: classroomInfo,
-      }); // 강의실에 참여합니다
-    }
+    //if (socket && classroomInfo?.classroom_id) {
+    //  socket.emit(socketEvents.JOIN_CLASSROOM, {
+    //    classroomDetails: classroomInfo,
+    //  }); // 강의실에 참여합니다
+    //}
 
     if (import.meta.env.VITE_RUNNING_MODE === 'development') {
-      console.log(`Attempting to join classroom: ${classroomInfo.classroom_id}`);
+      //console.log(`Attempting to join classroom: ${classroomInfo.classroom_id}`);
     } else {
       if (import.meta.env.VITE_RUNNING_MODE === 'development') {
         if (!socket) console.warn('Socket is not ready yet.');
         if (!classroomInfo?.classroom_id) console.warn('Classroom ID is not available yet.');
       }
     }
+    console.log(participants);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -152,7 +153,7 @@ const ClassroomPage = () => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          zIndex: 10, // 다른 요소 위에 오도록 z-index 설정
+          zIndex: 1, // 다른 요소 위에 오도록 z-index 설정
         }}
       >
         <BsChevronBarLeft />
@@ -170,7 +171,7 @@ const ClassroomPage = () => {
             </Button>
           </div>
           <ListGroup className='mt-3'>
-            {participants && participants.length > 0 ? (
+            {participants.joinedUser && participants.joinedUser.length > 0 ? (
               participants.map((student) => (
                 // student 객체에 고유 ID (예: student.userId)가 있다고 가정하고 key로 사용
                 <ListGroup.Item key={student.userId || student}>
@@ -310,6 +311,9 @@ const ClassroomPage = () => {
               onClick={() => setIsSidebarOpen(true)}
               className='p-0 me-2' // 패딩 제거로 정사각형에 가깝게
               style={{
+                position: 'absolute',
+                top: '1rem',
+                left: '1rem',
                 width: '2rem',
                 height: '2rem',
                 zIndex: 10,
