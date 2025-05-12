@@ -65,33 +65,41 @@ const ClassroomPage = () => {
   };
 
   const handleJoinClassroom = async () => {
+    const supabase_access_token = await getSupabaseAccessToken();
     setInviteCode((prev) => prev.trim().toUpperCase());
+
+    if (import.meta.env.VITE_RUNNING_MODE === 'development') {
+      console.log('inviteCode:', inviteCode);
+      console.log('supabase_access_token:', supabase_access_token);
+    }
+
     if (!inviteCode) {
       alert('초대 코드를 입력하세요.');
       return;
     }
-    const supabase_access_token = localStorage.getItem(`sb-${import.meta.env.VITE_SUPABASE_ID}-auth-token`);
     if (!supabase_access_token) {
       alert('로그인이 필요합니다.');
       navigate('/login');
       return;
     }
     try {
-      const response = await fetch(`${import.meta.env.VITE_URL_API}/api/classrooms/join`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/classrooms/join`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${supabase_access_token}`,
         },
-        body: JSON.stringify({ inviteCode }),
+        body: JSON.stringify({
+          inviteCode: inviteCode,
+        }),
       });
       const data = await response.json();
       if (response.ok && data.success && data.classroom) {
         const newClassroomInfo = data.classroom;
         localStorage.setItem('currentClassroomInfo', JSON.stringify(newClassroomInfo));
       }
-      navigate('/classroom');
       handleCloseJoinModal();
+      navigate('/classroom');
     } catch (error) {
       if (import.meta.env.VITE_RUNNING_MODE === 'development') {
         console.error('Error joining classroom:', error);
