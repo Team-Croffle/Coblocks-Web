@@ -5,7 +5,7 @@ import Container from 'react-bootstrap/Container';
 import { FaGithub, FaInstagram } from 'react-icons/fa';
 import { MdEmail } from 'react-icons/md';
 import InfoCSS from './DeveloperInfo.module.css';
-import mbtiImages from '../../assets/images/developerInfoMbti/MBTI';
+import mbtiImages from '../../assets/images/DeveloperInfoMbti/MBTI';
 import wkuLogo from '../../assets/images/wkuLogo/wkuLogo.png';
 
 const DeveloperCard = ({ developer }) => {
