@@ -144,7 +144,7 @@ const NavigationBar = () => {
             </Nav.Link>
             <Nav.Link
               as={Link}
-              to='/classroom'
+              to='/classroom-main'
               className='text-light rounded px-3 py-2 me-2 d-flex align-items-center'
               style={{
                 border: '2px solid white',

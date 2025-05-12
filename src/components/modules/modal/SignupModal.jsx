@@ -87,6 +87,7 @@ const SignupModal = ({ show, onHide }) => {
       // 성공 후 모달을 닫지 않고, 성공 메시지 표시
     } catch (err) {
       setError(getErrorMessage(err));
+      console.error('회원가입 오류:', err);
     } finally {
       setLoading(false);
     }
