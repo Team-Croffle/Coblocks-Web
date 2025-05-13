@@ -236,7 +236,6 @@ const ClassroomPage = () => {
         <ListGroup className='mt-3'>
           {participants && participants.length > 0 ? (
             participants.map((student) => {
-              console.log('학생:', student);
               // student 객체에 고유 ID (예: student.userId)가 있다고 가정하고 key로 사용
               return (
                 <ListGroup.Item key={student.userId || student}>
