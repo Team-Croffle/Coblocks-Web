@@ -3,6 +3,7 @@ const socketEvents = {
   JOIN_CLASSROOM: 'joinClassroom',
   LEAVE_CLASSROOM: 'leaveClassroom',
   SEND_MESSAGE: 'sendMessage',
+  EDITOR_CONTENT_CHANGE: 'editorContentChange',
 
   // 서버 -> 클라이언트
   JOIN_CLASSROOM_SUCCESS: 'joinClassroomSuccess',
@@ -12,6 +13,7 @@ const socketEvents = {
   CLASSROOM_MESSAGE: 'classroomMessage',
   MESSAGE_ERROR: 'messageError',
   CLASSROOM_DELETED: 'classroomDeleted',
+  EDITOR_STATE_SYNC: 'editorStateSync',
 
   // 공통/내장
   CONNECT: 'connect',
