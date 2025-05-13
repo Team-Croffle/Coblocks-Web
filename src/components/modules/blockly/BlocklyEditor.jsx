@@ -136,7 +136,8 @@ const BlocklyEditor = ({
     // readOnly, toolbox, initialBlocks, blocklyOptions 값이 변경되면 워크스페이스를 새로 로드해야 함.
     // onWorkspaceReady 함수 참조가 변경되어도 이펙트는 재실행되어야 하지만,
     // 실제 앱에서는 onWorkspaceReady를 useCallback으로 감싸 불필요한 재실행을 막아야 함.
-  }, [readOnly, toolbox, initialBlocks, blocklyOptions, onWorkspaceReady]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [readOnly, toolbox, initialBlocks, onWorkspaceReady]);
 
   // Blockly가 주입될 DOM 요소를 렌더링
   return (

@@ -1,21 +1,22 @@
 /* eslint-disable no-unused-vars */
-import React, { useState, useRef, useEffect, useCallback, use } from 'react';
-import { FaBars, FaSyncAlt } from 'react-icons/fa';
-import { BsChevronBarLeft } from 'react-icons/bs';
-import { Button, Container, Row, Col, Card, Form, ListGroup, InputGroup } from 'react-bootstrap';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { FaSyncAlt } from 'react-icons/fa';
+import { Button, Container, Row, Col, Card, Form, ListGroup, InputGroup, Toast } from 'react-bootstrap';
 import BlocklyEditor from '@modules/blockly/BlocklyEditor';
 import { useClassroom } from '@/contexts/ClassroomContext';
-import socketEvents from '@data/socketEvents'; // 소켓 이벤트 상수
-import { getSupabaseAccessToken } from '@/utils/supabase';
+import socketEvents from '@services/socketEvents'; // 소켓 이벤트 상수
 import { useNavigate } from 'react-router-dom';
+import * as Blockly from 'blockly';
+import { getSupabaseAccessToken } from '@utils/supabase';
 
 const ClassroomPage = () => {
   const [groups, setGroups] = useState([]); // 그룹 목록
   const [newGroupName, setNewGroupName] = useState(''); // 새 그룹 이름
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true); // 왼쪽 패널 (처음엔 숨김)
+  const [showToast, setShowToast] = useState(false);
   const blocklyEditorRef = useRef(null);
   const chatInputRef = useRef(null); // 채팅 입력 필드 참조
   const navigate = useNavigate();
+  const workspaceRef = useRef(null); // Blockly 워크스페이스 인스턴스 저장
 
   const {
     socket,
@@ -23,8 +24,8 @@ const ClassroomPage = () => {
     participants, // 참가자 목록
     classroomInfo, // 강의실 정보
     isManager, // 강의실 관리자 여부
-    // setClassroomInfo, // 강의실 정보 설정 함수
-    // socketClose, // 소켓을 명시적으로 닫아야 할 때 사용
+    // setClassroomInfo, // 강의실 정보 설정 함수ㄹ
+    socketClose, // 소켓을 명시적으로 닫아야 할 때 사용
   } = useClassroom();
 
   const inviteCode = classroomInfo?.classroom_code || '로딩 중...'; // 초대 코드 (로딩 중일 때는 '로딩 중...' 표시)
@@ -45,7 +46,7 @@ const ClassroomPage = () => {
     //console.log('socket:', socket);
     //console.log('chat:', chat);
     //console.log('participants:', participants);
-    //console.log('classroomInfo:', classroomInfo);
+    console.log('classroomInfo:', classroomInfo);
     //console.log('isManager:', isManager);
 
     //if (socket && classroomInfo?.classroom_id) {
@@ -67,13 +68,38 @@ const ClassroomPage = () => {
   }, []);
 
   // 강의실 나가기 처리
-  const handleLeaveClass = () => {
+  const handleLeaveClass = async () => {
     if (window.confirm('정말로 강의실을 나가시겠습니까?')) {
-      socket.emit(socketEvents.LEAVE_CLASSROOM, {
-        classroomId: classroomInfo.classroom_id,
-      });
+      const supabase_access_token = await getSupabaseAccessToken();
+      // api를 통해 강의실 나가기 요청
+      try {
+        const res = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/classrooms/${classroomInfo.classroom_code}/leave`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${supabase_access_token}`,
+            },
+          },
+        );
+        if (import.meta.env.VITE_RUNNING_MODE === 'development') {
+          console.log('강의실 나가기 요청:', res);
+        }
+        if (res.ok) {
+          const data = await res.json();
+          if (import.meta.env.VITE_RUNNING_MODE === 'development') {
+            console.log('강의실 나가기 응답:', data);
+          }
+          localStorage.removeItem('currentClassroomInfo'); // 로컬 스토리지에서 강의실 정보 삭제
+          alert('강의실에서 나갔습니다.');
+          navigate('/classroom-main'); // 강의실 나가기 후 메인 페이지로 이동
+        }
+      } catch (error) {
+        console.error('Error leaving classroom:', error);
+        alert('강의실 나가기 중 오류가 발생했습니다.');
+      }
     }
-    navigate('/classroom-main'); // 강의실 나가기 후 메인 페이지로 이동
   };
 
   // 그룹 생성 처리
@@ -134,156 +160,246 @@ const ClassroomPage = () => {
     [socket, classroomInfo],
   );
 
+  const handleCopyInviteCode = () => {
+    navigator.clipboard.writeText(inviteCode);
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 1000);
+  };
+
+  // 서버에서 받은 블록 상태를 적용하는 함수
+  const applyWorkspaceState = useCallback((state) => {
+    if (workspaceRef.current && Blockly && Blockly.serialization && Blockly.serialization.workspaces) {
+      try {
+        Blockly.serialization.workspaces.load(state, workspaceRef.current);
+      } catch (e) {
+        console.error('블록 상태 적용 실패:', e);
+      }
+    }
+  }, []);
+
+  // 소켓 이벤트 등록 (참여자용)
+  useEffect(() => {
+    if (!socket) return;
+    const handleReceiveBlocks = (data) => {
+      if (import.meta.env.VITE_RUNNING_MODE === 'development') {
+        console.log('Received blockly state:', data);
+      }
+      if (data) {
+        applyWorkspaceState(data);
+      }
+    };
+    socket.on(socketEvents.EDITOR_STATE_SYNC, handleReceiveBlocks);
+    return () => {
+      socket.off(socketEvents.EDITOR_STATE_SYNC, handleReceiveBlocks);
+    };
+  }, [socket, applyWorkspaceState]);
+
+  // 매니저가 블록을 변경할 때 서버로 전송
+  const handleWorkspaceReady = useCallback(
+    (workspace) => {
+      workspaceRef.current = workspace;
+      if (isManager && workspace) {
+        workspace.addChangeListener((event) => {
+          if (!event.isUiEvent && event.type !== Blockly.Events.VIEWPORT_CHANGE) {
+            try {
+              const state = Blockly.serialization.workspaces.save(workspace);
+              if (import.meta.env.VITE_RUNNING_MODE === 'development') {
+                console.log('Sending blockly state update:', state);
+              }
+              socket.emit(socketEvents.EDITOR_CONTENT_CHANGE, state);
+            } catch (e) {
+              console.error('블록 상태 전송 실패:', e);
+            }
+          }
+        });
+      }
+    },
+    [isManager, socket],
+  );
+
   const LeftMenu = () => (
-    <Col
-      md={2}
-      className='bg-light d-flex flex-column justify-content-between p-3 position-relative'
-    >
-      {/* 왼쪽 패널 접기 버튼 */}
-      <Button
-        variant='secondary'
-        onClick={() => setIsSidebarOpen(false)}
-        className='p-0' // 패딩 제거로 정사각형에 가깝게
-        style={{
-          position: 'absolute',
-          top: '1rem',
-          right: '1rem', // 오른쪽에서 1rem
-          width: '2rem',
-          height: '2rem',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1, // 다른 요소 위에 오도록 z-index 설정
-        }}
-      >
-        <BsChevronBarLeft />
-      </Button>
-      <div className='d-flex flex-column mt-3'>
-        <div className='mb-5 mt-4'>
-          <div className='d-flex justify-content-between align-items-center'>
-            <h4>학생 목록</h4>
-            <Button
-              variant='outline-secondary'
-              size='sm'
-              onClick={handleRefreshParticipants}
-            >
-              <FaSyncAlt /> {/* 새로고침 아이콘 */}
-            </Button>
-          </div>
-          <ListGroup className='mt-3'>
-            {participants.joinedUser && participants.joinedUser.length > 0 ? (
-              participants.map((student) => (
-                // student 객체에 고유 ID (예: student.userId)가 있다고 가정하고 key로 사용
+    <div className='d-flex flex-column mt-3'>
+      <div className='mb-4'>
+        <h5 className='fw-bold text-center'>{'강의실 이름: ' + (classroomInfo?.classroom_name || '정보없음')}</h5>
+      </div>
+      <div className='mb-5 mt-4'>
+        <div className='d-flex justify-content-between align-items-center'>
+          <h4>학생 목록</h4>
+          <Button
+            variant='outline-secondary'
+            size='sm'
+            onClick={handleRefreshParticipants}
+          >
+            <FaSyncAlt /> {/* 새로고침 아이콘 */}
+          </Button>
+        </div>
+        <ListGroup className='mt-3'>
+          {participants && participants.length > 0 ? (
+            participants.map((student) => {
+              console.log('학생:', student);
+              // student 객체에 고유 ID (예: student.userId)가 있다고 가정하고 key로 사용
+              return (
                 <ListGroup.Item key={student.userId || student}>
                   {student.username || student} {/* student 객체에 username 속성이 있다고 가정 */}
                 </ListGroup.Item>
-              ))
-            ) : (
-              <ListGroup.Item>참여한 학생이 없습니다.</ListGroup.Item>
-            )}
-          </ListGroup>
-        </div>
-
-        <div>
-          <h4 className='mt-4'>문제풀이 그룹</h4>
-          <InputGroup className='mb-3 mt-3'>
-            <Form.Control
-              placeholder='그룹 이름'
-              value={newGroupName}
-              onChange={(e) => {
-                setNewGroupName(e.target.value);
-              }}
-            />
-            <Button
-              variant='primary'
-              onClick={handleCreateGroup}
-            >
-              생성
-            </Button>
-          </InputGroup>
-          <ListGroup>
-            {groups && groups.length > 0 ? (
-              groups.map((group) => {
-                return <ListGroup.Item key={group}>{group}</ListGroup.Item>;
-              })
-            ) : (
-              <ListGroup.Item>생성된 그룹이 없습니다.</ListGroup.Item>
-            )}
-          </ListGroup>
-        </div>
+              );
+            })
+          ) : (
+            <ListGroup.Item>참여한 학생이 없습니다.</ListGroup.Item>
+          )}
+        </ListGroup>
       </div>
-    </Col>
+
+      <div>
+        <h4 className='mt-4'>문제풀이 그룹</h4>
+        <InputGroup className='mb-3 mt-3'>
+          <Form.Control
+            placeholder='그룹 이름'
+            value={newGroupName}
+            onChange={(e) => {
+              setNewGroupName(e.target.value);
+            }}
+          />
+          <Button
+            variant='primary'
+            onClick={handleCreateGroup}
+          >
+            생성
+          </Button>
+        </InputGroup>
+        <ListGroup>
+          {groups && groups.length > 0 ? (
+            groups.map((group) => {
+              return <ListGroup.Item key={group}>{group}</ListGroup.Item>;
+            })
+          ) : (
+            <ListGroup.Item>생성된 그룹이 없습니다.</ListGroup.Item>
+          )}
+        </ListGroup>
+      </div>
+    </div>
   );
 
   const RightMenu = () => (
-    <Col
-      md={2}
-      className='bg-light d-flex flex-column justify-content-between p-3'
+    <div
+      className='d-flex flex-column'
+      style={{ height: '100%' }}
     >
       <div>
         {isManager && (
           <>
             <h4>초대 코드</h4>
-            <Card className='mb-4'>
-              <Card.Body className='text-center'>
-                <Card.Text>{inviteCode}</Card.Text>
+            <Card
+              className='mb-4 cursor-pointer'
+              onClick={handleCopyInviteCode}
+              style={{ cursor: 'pointer' }}
+            >
+              <Card.Body
+                className='text-center mt-3 p-0'
+                style={{ cursor: 'pointer' }}
+              >
+                <Card.Text className='m-0 p-0'>{inviteCode}</Card.Text>
+                <Card.Text
+                  className='text-muted mb-1 p-0'
+                  style={{ fontSize: '0.7rem' }}
+                >
+                  클릭 시 복사됩니다.
+                </Card.Text>
               </Card.Body>
             </Card>
+            <Toast
+              show={showToast}
+              onClose={() => setShowToast(false)}
+              delay={1000}
+              autohide
+              style={{
+                position: 'fixed',
+                top: '20px',
+                right: '20px',
+                zIndex: 1000,
+              }}
+            >
+              <Toast.Body>복사되었습니다!</Toast.Body>
+            </Toast>
           </>
         )}
       </div>
 
       {/* 채팅 기능 */}
-      <div>
+      <div
+        className='flex-grow-1 d-flex flex-column'
+        style={{ minHeight: 0, height: '100%' }}
+      >
         <h4>채팅</h4>
-        <ListGroup className='mt-3'>
-          {chat && chat.length > 0 ? (
-            chat.map((msg, index) => (
-              <ListGroup.Item key={index}>
-                <strong>{msg.sender}:</strong> {msg.message} {/* Context의 데이터 구조에 맞게 message 사용 */}
-                <small className='d-block text-muted'>{msg.timestamp}</small>
-              </ListGroup.Item>
-            ))
-          ) : (
-            <ListGroup.Item>채팅 내용이 없습니다.</ListGroup.Item>
-          )}
-        </ListGroup>
-        <InputGroup className='mt-3'>
-          <Form.Control
-            ref={chatInputRef}
-            placeholder='메시지 입력'
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
-                // 한글 입력 완료 후 Enter
-                handleSendChatMessage(e.target.value);
-              }
-            }}
-          />
-          <Button
-            variant='primary'
-            onClick={() => handleSendChatMessage(chatInputRef.current.value)}
+        <Card
+          className='flex-grow-1 d-flex flex-column mt-3'
+          style={{ minHeight: 0 }}
+        >
+          <Card.Body
+            className='d-flex flex-column p-0'
+            style={{ minHeight: 0 }}
           >
-            전송
-          </Button>
-        </InputGroup>
+            <div
+              className='flex-grow-1 overflow-auto p-3'
+              style={{ minHeight: 0 }}
+            >
+              {chat && chat.length > 0 ? (
+                chat.map((msg, index) => (
+                  <div
+                    key={index}
+                    className='mb-2'
+                  >
+                    <strong>{msg.sender}:</strong> {msg.message}
+                    <small className='d-block text-muted'>{msg.timestamp}</small>
+                  </div>
+                ))
+              ) : (
+                <div className='text-muted'>채팅 내용이 없습니다.</div>
+              )}
+            </div>
+            <div className='border-top p-0'>
+              <InputGroup>
+                <Form.Control
+                  ref={chatInputRef}
+                  placeholder='메시지 입력'
+                  className='border-0'
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
+                      handleSendChatMessage(e.target.value);
+                    }
+                  }}
+                />
+                <Button
+                  variant='primary'
+                  className='border-0'
+                  style={{ borderRadius: '0 0 0.25rem 0' }}
+                  onClick={() => handleSendChatMessage(chatInputRef.current.value)}
+                >
+                  전송
+                </Button>
+              </InputGroup>
+            </div>
+          </Card.Body>
+        </Card>
       </div>
+
       {/* 강의실 나가기 버튼 */}
       <Button
         variant='danger'
-        className='mt-4'
+        className='mt-3'
         onClick={handleLeaveClass}
       >
         강의실 나가기
       </Button>
-    </Col>
+    </div>
   );
 
   if (!classroomInfo?.classroom_id) {
-    // classroom_id를 기준으로 로딩 상태 판단
     return (
       <Container
         fluid
-        className='vh-100 d-flex justify-content-center align-items-center'
+        className='d-flex justify-content-center align-items-center p-0'
+        style={{ height: 'calc(100vh - 120px)' }}
       >
         <div>강의실 정보를 불러오는 중이거나 유효하지 않은 강의실입니다...</div>
       </Container>
@@ -293,57 +409,49 @@ const ClassroomPage = () => {
   return (
     <Container
       fluid
-      className='vh-100'
+      className='p-0'
+      style={{ height: 'calc(100vh - 120px)' }}
     >
-      <Row className='h-100'>
-        {/* 왼쪽 패널: 학생 목록 + 그룹 (처음에 숨김 상태) */}
-        {isSidebarOpen && <LeftMenu />}
+      <Row
+        className='g-0'
+        style={{ height: '100%' }}
+      >
+        {/* 왼쪽 패널: 강의실 이름 + 학생 목록 + 그룹 */}
+        <Col
+          md={2}
+          className='bg-light d-flex flex-column p-3 border-end shadow-sm'
+          style={{ height: '100%' }}
+        >
+          <LeftMenu />
+        </Col>
 
         {/* 중앙 패널 */}
         <Col
-          md={isSidebarOpen ? 8 : 10}
-          className='bg-white d-flex flex-column align-items-center position-relative'
+          md={8}
+          className='d-flex flex-column align-items-center bg-white'
+          style={{ height: '100%' }}
         >
-          {/* 왼쪽 패널 열기 버튼 (초기 표시됨) */}
-          {!isSidebarOpen && (
-            <Button
-              variant='secondary'
-              onClick={() => setIsSidebarOpen(true)}
-              className='p-0 me-2' // 패딩 제거로 정사각형에 가깝게
-              style={{
-                position: 'absolute',
-                top: '1rem',
-                left: '1rem',
-                width: '2rem',
-                height: '2rem',
-                zIndex: 10,
-              }}
-            >
-              <FaBars />
-            </Button>
-          )}
-
-          <h2 className='mt-5 mb-2'>{classroomInfo?.classroom_name || '정보없음'}</h2>
-
           <div
-            className='editor-container flex-grow-1 w-100'
-            style={{ border: '1px solid #ccc', overflow: 'hidden' }} // overflow hidden 추가
+            className='editor-container flex-grow-1 w-100 px-3 pt-3'
+            style={{ border: '1px solid #ccc', overflow: 'hidden' }}
           >
             <BlocklyEditor
               ref={blocklyEditorRef}
-              readOnly={isManager ? !isManager : false} // 편집 가능 여부 - 추후 !isManager로 변경
-              // initialXml="<xml><block type='controls_if' x='50' y='50'></block></xml>" // 초기 블록 로드 (선택 사항)
-              onWorkspaceChange={(xmlString) => {
-                // 워크스페이스 변경 시마다 콜백 받기 (예: 실시간 공유를 위해 WebSocket으로 전송)
-                console.log('Workspace changed (XML):', xmlString);
-              }}
+              readOnly={!isManager}
               blocklyOptions={blocklyEditorZoomOptions}
+              onWorkspaceReady={handleWorkspaceReady}
             />
           </div>
         </Col>
 
-        {/* 오른쪽 패널: 초대 코드 */}
-        <RightMenu />
+        {/* 오른쪽 패널: 초대 코드 + 채팅 */}
+        <Col
+          md={2}
+          className='bg-light d-flex flex-column p-3 border-start shadow-sm'
+          style={{ height: '100%' }}
+        >
+          <RightMenu />
+        </Col>
       </Row>
     </Container>
   );

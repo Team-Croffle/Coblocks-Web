@@ -7,6 +7,7 @@ import ResetPasswordPage from '@pages/auth/ResetPasswordPage';
 import IntroContainer from '@pages/intro/IntroContainer'; // IntroContainer 컴포넌트 가져오기
 import ClassroomMainPage from '@pages/classroom/ClassroomMainPage';
 import ClassroomPage from '@pages/classroom/ClassroomPage';
+import ClassroomWorkspace from '@pages/classroom/ClassroomWorkspace';
 import ClassroomLayout from './components/layouts/ClassroomLayout';
 
 const AppContent = () => {
@@ -41,6 +42,10 @@ const AppContent = () => {
           <Route
             path='/classroom'
             element={<ClassroomPage />}
+          />
+          <Route
+            path='/classroom/workspace'
+            element={<ClassroomWorkspace />}
           />
         </Route>
 
