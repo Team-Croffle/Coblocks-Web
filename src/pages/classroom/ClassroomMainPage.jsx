@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Container, Modal, Form, Row, Col, Card } from 'react-bootstrap';
+import { Button, Container, Modal, Form, Row, Col, Card, Spinner } from 'react-bootstrap';
 import { FaRegPenToSquare } from 'react-icons/fa6'; // 강의실 개설 아이콘
 import { MdExitToApp } from 'react-icons/md'; // 강의실 접속 아이콘 추가
 import { FaSchool } from 'react-icons/fa'; // 강의실 아이콘 추가
@@ -11,34 +11,46 @@ const ClassroomPage = () => {
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [classroomName, setClassroomName] = useState('');
   const [inviteCode, setInviteCode] = useState('');
+  const [isConnectLoading, setIsConnectLoading] = useState(false);
   const navigate = useNavigate();
 
+  // 강의실 개설 모달 열기
   const handleOpenCreateModal = () => {
     setShowCreateModal(true);
   };
 
+  // 강의실 개설 모달 닫기
   const handleCloseCreateModal = () => {
     setShowCreateModal(false);
     setClassroomName('');
   };
 
+  // 강의실 접속 모달 열기
   const handleOpenJoinModal = () => {
     setShowJoinModal(true);
   };
 
+  // 강의실 접속 모달 닫기
   const handleCloseJoinModal = () => {
     setShowJoinModal(false);
     setInviteCode('');
   };
 
+  // 강의실 개설
   const handleCreateClassroom = async () => {
-    const supabase_access_token = await getSupabaseAccessToken();
-    if (!supabase_access_token) {
-      alert('로그인이 필요합니다.');
-      navigate('/login');
-      return;
-    }
+    setIsConnectLoading(true);
     try {
+      // supabase_access_token 가져오기
+      const supabase_access_token = await getSupabaseAccessToken();
+      if (!supabase_access_token) {
+        // supabase_access_token이 없으면 로그아웃 상태로 간주
+        alert('로그인이 필요합니다.');
+        // 로그인 페이지로 리다이렉트
+        navigate('/login');
+        return;
+      }
+
+      // api 요청 - 강의실 개설
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/classrooms`, {
         method: 'POST',
         headers: {
@@ -49,11 +61,17 @@ const ClassroomPage = () => {
           classroom_name: classroomName,
         }),
       });
+
+      // 응답 처리
       const data = await response.json();
+
       if (data.success && data.classroom) {
+        // 강의실 생성 성공
         const newClassroomInfo = data.classroom;
+        // 강의실 정보 저장
         localStorage.setItem('currentClassroomInfo', JSON.stringify(newClassroomInfo));
         handleCloseCreateModal();
+        // 강의실 페이지로 이동
         navigate('/classroom');
       }
     } catch (error) {
@@ -61,42 +79,64 @@ const ClassroomPage = () => {
         console.error('Error creating classroom:', error);
       }
       alert('강의실 생성 중 오류가 발생했습니다.');
+    } finally {
+      setIsConnectLoading(false);
     }
   };
 
   const handleJoinClassroom = async () => {
-    setInviteCode((prev) => prev.trim().toUpperCase());
-    if (!inviteCode) {
-      alert('초대 코드를 입력하세요.');
-      return;
-    }
-    const supabase_access_token = localStorage.getItem(`sb-${import.meta.env.VITE_SUPABASE_ID}-auth-token`);
-    if (!supabase_access_token) {
-      alert('로그인이 필요합니다.');
-      navigate('/login');
-      return;
-    }
+    setIsConnectLoading(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_URL_API}/api/classrooms/join`, {
+      // supabase_access_token 가져오기
+      const supabase_access_token = await getSupabaseAccessToken();
+      // 초대 코드 공백 제거 및 대문자로 변환
+      setInviteCode((prev) => prev.trim().toUpperCase());
+
+      if (import.meta.env.VITE_RUNNING_MODE === 'development') {
+        console.log('inviteCode:', inviteCode);
+        console.log('supabase_access_token:', supabase_access_token);
+      }
+
+      if (!inviteCode) {
+        alert('초대 코드를 입력하세요.');
+        return;
+      }
+      if (!supabase_access_token) {
+        alert('로그인이 필요합니다.');
+        navigate('/login');
+        return;
+      }
+      // api 요청 - 강의실 접속
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/classrooms/join`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${supabase_access_token}`,
         },
-        body: JSON.stringify({ inviteCode }),
+        body: JSON.stringify({
+          inviteCode: inviteCode,
+        }),
       });
+
+      // 응답 처리
       const data = await response.json();
+
       if (response.ok && data.success && data.classroom) {
         const newClassroomInfo = data.classroom;
         localStorage.setItem('currentClassroomInfo', JSON.stringify(newClassroomInfo));
       }
-      navigate('/classroom');
+
       handleCloseJoinModal();
+
+      // 실제 classroom으로 이동
+      navigate('/classroom');
     } catch (error) {
       if (import.meta.env.VITE_RUNNING_MODE === 'development') {
         console.error('Error joining classroom:', error);
       }
       alert('강의실 접속 중 오류가 발생했습니다.');
+    } finally {
+      setIsConnectLoading(false);
     }
   };
 
@@ -206,7 +246,15 @@ const ClassroomPage = () => {
             variant='primary'
             onClick={handleCreateClassroom}
           >
-            생성
+            {/* 강의실 개설 버튼 */}
+            {isConnectLoading ? (
+              <Spinner
+                animation='border'
+                size='sm'
+              />
+            ) : (
+              '강의실 개설'
+            )}
           </Button>
         </Modal.Footer>
       </Modal>
@@ -251,7 +299,15 @@ const ClassroomPage = () => {
             onClick={handleJoinClassroom}
             disabled={!inviteCode}
           >
-            접속
+            {/* 강의실 접속 버튼 */}
+            {isConnectLoading ? (
+              <Spinner
+                animation='border'
+                size='sm'
+              />
+            ) : (
+              '접속'
+            )}
           </Button>
         </Modal.Footer>
       </Modal>
