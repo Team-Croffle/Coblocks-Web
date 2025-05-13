@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Socket from '@services/socketService'; // Socket 클래스 이름 확인 필요
-import socketEvents from '@data/socketEvents'; // socketEvents 경로가 올바른지 확인해주세요.
+import socketEvents from '@services/socketEvents'; // socketEvents 경로가 올바른지 확인해주세요.
 import { ClassroomContext } from './ClassroomContext'; // ClassroomContext 경로 확인 필요
 
 const ClassroomContextProvider = ({ children }) => {
@@ -24,7 +24,7 @@ const ClassroomContextProvider = ({ children }) => {
   const socketClose = useCallback(() => {
     if (socket) {
       socket.closeSocket();
-      setSocket();
+      setSocket(null);
       // setChatContext([]);
       // setParticipants([]);
       if (import.meta.env.VITE_RUNNING_MODE === 'development') {
@@ -202,7 +202,7 @@ const ClassroomContextProvider = ({ children }) => {
           }
           // 현재 참여 중인 강의실이 삭제된 경우에만 처리
           if (data && data.classroomId && classroomInfo && data.classroomId === classroomInfo.classroom_id) {
-            alert(`강의실이 삭제되었습니다: ${data.message || '강의실이 관리자에 의해 종료되었습니다.'}`);
+            alert(`${data.message ? '강의실이 삭제되었습니다.' : '강의실이 관리자에 의해 종료되었습니다.'}`);
             socketClose(); // 소켓 연결 종료
             setClassroomInfo(null); // 현재 강의실 정보 초기화
             localStorage.removeItem('currentClassroomInfo'); // 로컬 스토리지에서도 정보 제거
