@@ -180,6 +180,9 @@ const ClassroomPage = () => {
   // 소켓 이벤트 등록 (참여자용)
   useEffect(() => {
     if (!socket) return;
+    if (import.meta.env.VITE_RUNNING_MODE === 'development') {
+      console.log('Socket is ready:', socket);
+    }
     const handleReceiveBlocks = (data) => {
       if (import.meta.env.VITE_RUNNING_MODE === 'development') {
         console.log('Received blockly state:', data);
