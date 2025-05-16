@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Container, Form, Button, Alert, Card } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
-import SignupModal from '@modules/modal/SignupModal';
+import SignupModal from '@modals/SignupModal';
 import supabase from '@utils/supabase';
 
 const LoginPage = () => {
