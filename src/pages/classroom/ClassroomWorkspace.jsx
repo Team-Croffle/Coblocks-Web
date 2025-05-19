@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Container, Row, Col, Card, Button, ListGroup, Badge } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button, ListGroup, Badge, Offcanvas } from 'react-bootstrap';
+import BlocklyEditor from '@/components/modules/blockly/BlocklyEditor';
+import BlocklyStage from '@/components/modules/blockly/BlocklyStage';
+import TestStage from '@/data/StageTest.json';
 
 const ClassroomWorkspace = ({ role = 'student' }) => {
   // 학생 및 선생님 데이터 상태
   const [students] = useState([]);
+  const [editorShow, setEditorShow] = useState(false);
 
   const groups = [
     { id: 1, name: '1분단', position: 'top-left' },
@@ -17,7 +21,11 @@ const ClassroomWorkspace = ({ role = 'student' }) => {
 
   // 실행하기 버튼 클릭 핸들러
   const handleExecute = () => {
-    alert('학습 활동을 시작합니다!');
+    alert('실행');
+  };
+
+  const handleCoingBtn = () => {
+    setEditorShow(true);
   };
 
   const getStatusBadge = (status) => {
@@ -26,14 +34,14 @@ const ClassroomWorkspace = ({ role = 'student' }) => {
         bg='success'
         className='ms-2'
       >
-        출석
+        제출출
       </Badge>
     ) : (
       <Badge
         bg='secondary'
         className='ms-2'
       >
-        미출석
+        미제출출
       </Badge>
     );
   };
@@ -64,6 +72,40 @@ const ClassroomWorkspace = ({ role = 'student' }) => {
     });
   };
 
+  const EditorCanvas = () => {
+    return (
+      <Offcanvas
+        show={editorShow}
+        onHide={() => {
+          setEditorShow(false);
+        }}
+        placement='end'
+        style={{ width: '100%' }}
+      >
+        <Offcanvas.Header closeButton>
+          <Offcanvas.Title>코딩하기</Offcanvas.Title>
+        </Offcanvas.Header>
+        <Offcanvas.Body className='d-flex flex-row'>
+          {/* 문제 설명 */}
+          <Container className='d-flex flex-column w-25 h-100'>
+            <Card className='me-3 h-25'>
+              <Card.Body>
+                <Card.Text>문제 스테이지</Card.Text>
+              </Card.Body>
+            </Card>
+            <Card className='me-3 mt-3 h-75'>
+              <Card.Body>
+                <Card.Text>문제 설명</Card.Text>
+              </Card.Body>
+            </Card>
+          </Container>
+          {/* 코딩 에디터 컴포넌트 */}
+          <BlocklyEditor readOnly={false} />
+        </Offcanvas.Body>
+      </Offcanvas>
+    );
+  };
+
   return (
     <Container
       fluid
@@ -76,44 +118,24 @@ const ClassroomWorkspace = ({ role = 'student' }) => {
             className='classroom-layout'
             style={{ height: '80vh' }}
           >
-            <Card.Body className='d-flex flex-column'>
+            <Card.Body className='d-flex flex-column p-2'>
               <div
-                className='d-flex flex-column justify-content-between flex-grow-1'
+                className='d-flex flex-column justify-content-between flex-grow-1 p-1'
                 style={{ border: '1px solid #ccc', borderRadius: '8px', padding: '10px' }}
               >
-                <div className='d-flex flex-grow-1 mb-2'>
-                  <div
-                    className='flex-fill me-1'
-                    style={{ border: '1px solid #ddd', borderRadius: '6px', height: '100%' }}
-                  >
-                    {' '}
-                  </div>
-                  <div
-                    className='flex-fill ms-1'
-                    style={{ border: '1px solid #ddd', borderRadius: '6px', height: '100%' }}
-                  >
-                    {' '}
-                  </div>
+                <div className='d-flex flex-grow-1 mb-2 h-50'>
+                  <BlocklyStage initialStage={TestStage} />
+                  <BlocklyStage />
                 </div>
-                <div className='d-flex flex-grow-1 mt-2'>
-                  <div
-                    className='flex-fill me-1'
-                    style={{ border: '1px solid #ddd', borderRadius: '6px', height: '100%' }}
-                  >
-                    {' '}
-                  </div>
-                  <div
-                    className='flex-fill ms-1'
-                    style={{ border: '1px solid #ddd', borderRadius: '6px', height: '100%' }}
-                  >
-                    {' '}
-                  </div>
+                <div className='d-flex flex-grow-1 mt-2 h-50'>
+                  <BlocklyStage />
+                  <BlocklyStage />
                 </div>
               </div>
 
               {/* 실행하기 버튼 */}
               {role === 'student' && (
-                <div className='d-flex justify-content-center mt-3'>
+                <div className='d-flex justify-content-center mt-3 mb-2'>
                   <Button
                     variant='success'
                     className='px-5'
@@ -146,8 +168,17 @@ const ClassroomWorkspace = ({ role = 'student' }) => {
               <ListGroup className='mt-3'>{renderStudentList()}</ListGroup>
             </Card.Body>
           </Card>
+          <Button
+            variant='success'
+            className='my-5'
+            style={{ width: '100%' }}
+            onClick={handleCoingBtn}
+          >
+            코딩하기
+          </Button>
         </Col>
       </Row>
+      <EditorCanvas />
     </Container>
   );
 };

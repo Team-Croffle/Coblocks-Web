@@ -25,7 +25,7 @@ const ClassroomPage = () => {
     classroomInfo, // 강의실 정보
     isManager, // 강의실 관리자 여부
     // setClassroomInfo, // 강의실 정보 설정 함수ㄹ
-    socketClose, // 소켓을 명시적으로 닫아야 할 때 사용
+    // socketClose, // 소켓을 명시적으로 닫아야 할 때 사용
   } = useClassroom();
 
   const inviteCode = classroomInfo?.classroom_code || '로딩 중...'; // 초대 코드 (로딩 중일 때는 '로딩 중...' 표시)

@@ -1,0 +1,11 @@
+This is a placeholder file. 
+
+To use character sprites, you need to add 15 sprite images for the walking animation in this directory.
+The images should be named as follows:
+
+Walk (1).png
+Walk (2).png
+...
+Walk (15).png
+
+These images should be PNG files with transparency and consistent dimensions.

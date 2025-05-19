@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "echo \"Note: Testing is not configured yet. Install a test runner like Vitest or Jest to run tests.\""
   },
   "dependencies": {
     "@supabase/ssr": "^0.6.1",
@@ -16,6 +17,7 @@
     "bootstrap": "^5.3.5",
     "i18next": "^25.0.2",
     "i18next-browser-languagedetector": "^8.0.5",
+    "phaser": "^3.88.2",
     "prop-types": "^15.8.1",
     "react": "^19.0.0",
     "react-bootstrap": "^2.10.9",
