@@ -34,14 +34,14 @@ const ClassroomWorkspace = ({ role = 'student' }) => {
         bg='success'
         className='ms-2'
       >
-        제출출
+        제출
       </Badge>
     ) : (
       <Badge
         bg='secondary'
         className='ms-2'
       >
-        미제출출
+        미제출
       </Badge>
     );
   };

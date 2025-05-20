@@ -3,6 +3,34 @@ import PropTypes from 'prop-types';
 import Phaser from 'phaser';
 import StageScene from './StageScene';
 
+/**
+ * BlocklyStage 컴포넌트
+ * @param {string} jsCode Blockly 코드
+ * @param {object} initialStage 초기 스테이지 데이터
+ * @returns {JSX.Element}
+ *
+ * @description
+ * initialStage의 JSON 데이터 형식은 다음과 같습니다.
+ * {
+ *   "width": number,
+ *   "height": number,
+ *   "grid": [
+ *     { "x": number, "y": number, "type": string }
+ *     ...
+ *     { "x": number, "y": number, "type": string }
+ *   ],
+ *   "objects": [
+ *     { "type": string, "x": number, "y": number, "state": string },
+ *     ...
+ *     { "type": string, "x": number, "y": number, "state": string },
+ *   ],
+ *   "character": {
+ *     "x": number,
+ *     "y": number,
+ *     "direction": string // "up", "down", "left", "right"
+ *   }
+ * }
+ */
 const BlocklyStage = forwardRef(({ jsCode, initialStage }, ref) => {
   const gameContainerRef = useRef(null);
   const [game, setGame] = useState(null);
@@ -80,13 +108,8 @@ const BlocklyStage = forwardRef(({ jsCode, initialStage }, ref) => {
     if (!initialStage || !gameContainerRef.current) return;
 
     try {
-      // JSON 또는 XML 형식의 초기 스테이지 데이터 파싱
-      const stageData =
-        typeof initialStage === 'string'
-          ? initialStage.trim().startsWith('<')
-            ? parseXmlStage(initialStage)
-            : JSON.parse(initialStage)
-          : initialStage;
+      // JSON 형식의 초기 스테이지 데이터 파싱
+      const stageData = typeof initialStage === 'string' ? JSON.parse(initialStage) : initialStage;
 
       initStage(stageData);
     } catch (error) {
@@ -377,6 +400,7 @@ const BlocklyStage = forwardRef(({ jsCode, initialStage }, ref) => {
     if (jsCode.trim()) {
       runCode();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [jsCode, stage, character, isRunning]);
 
   return (
@@ -395,7 +419,7 @@ const BlocklyStage = forwardRef(({ jsCode, initialStage }, ref) => {
     >
       <div
         ref={gameContainerRef}
-        style={{ width: '100%', height: '100%', borderRadius: '6px' }}
+        style={{ width: '100%', height: '100%' }}
       />
       {isRunning && (
         <div
