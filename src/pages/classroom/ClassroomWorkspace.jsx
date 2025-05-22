@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Container, Row, Col, Card, Button, ListGroup, Badge, Offcanvas } from 'react-bootstrap';
 import BlocklyEditor from '@/components/modules/blockly/BlocklyEditor';
 import BlocklyStage from '@/components/modules/blockly/BlocklyStage';
-import TestStage from '@/data/StageTest.json';
+import TestStage from '@/data/StageExample.json';
 
 const ClassroomWorkspace = ({ role = 'student' }) => {
   // 학생 및 선생님 데이터 상태
@@ -125,11 +125,11 @@ const ClassroomWorkspace = ({ role = 'student' }) => {
               >
                 <div className='d-flex flex-grow-1 mb-2 h-50'>
                   <BlocklyStage initialStage={TestStage} />
-                  <BlocklyStage />
+                  <BlocklyStage initialStage={TestStage} />
                 </div>
                 <div className='d-flex flex-grow-1 mt-2 h-50'>
-                  <BlocklyStage />
-                  <BlocklyStage />
+                  <BlocklyStage initialStage={TestStage} />
+                  <BlocklyStage initialStage={TestStage} />
                 </div>
               </div>
 
