@@ -3,6 +3,7 @@ import { Container, Form, Button, Alert, Card } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
 import SignupModal from '@modals/SignupModal';
 import supabase from '@utils/supabase';
+import mainLogo from '@assets/images/Logo/mainlogo-bg-tp.png';
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({
@@ -56,7 +57,13 @@ const LoginPage = () => {
           style={{ maxWidth: '450px', width: '100%' }}
         >
           <Card.Body>
-            <h2 className='text-center mb-4'>로그인</h2>
+            <div className='text-center mb-4'>
+              <img
+                src={mainLogo}
+                alt='메인 로고'
+                style={{ height: '150px', objectFit: 'contain' }}
+              />
+            </div>
 
             {error && <Alert variant='danger'>{error}</Alert>}
 

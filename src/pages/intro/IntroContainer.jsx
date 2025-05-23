@@ -7,9 +7,15 @@ const IntroContainer = () => {
   return (
     <div>
       <div className={`${styles.intro} py-3 position-relative`}>
-        <div className='introContainer position-relative mt-5 mx-auto'>
+        <div
+          className='introContainer position-relative mt-5 mx-auto'
+          style={{ zIndex: 2 }} // 글자를 앞으로 오게 설정
+        >
           <section className='introSection d-flex flex-column align-items-center'>
-            <div className='introContent text-center text-white'>
+            <div
+              className='introContent text-center text-white'
+              style={{ zIndex: 2 }} // 글자를 앞으로 오게 설정
+            >
               <p className='introParagraph fs-2 lh-base user-select-none'>
                 <span className='text-decoration-underline'>코딩</span>, 이제 블록으로 즐겁게 시작하세요!
                 <br />
@@ -23,14 +29,23 @@ const IntroContainer = () => {
             <IntroCarousel />
           </section>
           <div className='introBtnContainer d-flex justify-content-center gap-2 m-4'>
-            <Button variant='light' size='lg'>
+            <Button
+              variant='light'
+              size='lg'
+            >
               시작하기
             </Button>
-            <Button variant='light' size='lg'>
+            <Button
+              variant='light'
+              size='lg'
+            >
               문의하기
             </Button>
           </div>
-          <div className='introAddContainer text-center text-black fs-5 lh-base user-select-none'>
+          <div
+            className='introAddContainer text-center text-black fs-5 lh-base user-select-none'
+            style={{ zIndex: 2 }} // 추가 텍스트도 앞으로 오게 설정
+          >
             <h3 className='introAddTitle'>그리고...</h3>
             <p className='introAddParagraph'>
               코블록스는 교육 기관 및 코딩 학습 단체와 협력하여 코딩 교육 활성화에 기여하고 있습니다.
@@ -39,7 +54,10 @@ const IntroContainer = () => {
             </p>
           </div>
         </div>
-        <div className={styles.introDivider}>
+        <div
+          className={styles.introDivider}
+          style={{ zIndex: 1 }}
+        >
           <svg
             className='styles.svg'
             data-name='Layer 1'
