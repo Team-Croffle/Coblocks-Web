@@ -123,7 +123,7 @@ const BlocklyEditor = ({
       return () => {
         if (workspace.current) {
           workspace.current.dispose();
-          workspace.current = null;
+          //workspace.current = null;
         }
         resizeObserver.disconnect();
       };

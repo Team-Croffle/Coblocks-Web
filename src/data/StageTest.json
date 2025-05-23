@@ -1,21 +1,14 @@
 {
-  "width": 8,
-  "height": 7,
-  "grid": [
-    {"x": 0, "y": 1, "type": "path"},
-    {"x": 1, "y": 1, "type": "path"},
-    {"x": 2, "y": 1, "type": "path"},
-    {"x": 3, "y": 1, "type": "path"},
-    {"x": 3, "y": 2, "type": "path"},
-    {"x": 3, "y": 3, "type": "path"},
-    {"x": 3, "y": 4, "type": "path"},
-    {"x": 3, "y": 5, "type": "path"},
-    {"x": 4, "y": 5, "type": "path"},
-    {"x": 5, "y": 5, "type": "path"},
-    {"x": 6, "y": 5, "type": "path"},
-    {"x": 7, "y": 5, "type": "path"},
-    {"x": 0, "y": 0, "type": "wall"},
-    {"x": 1, "y": 0, "type": "wall"}
+  "col": 8,
+  "row": 7,
+  "tiles": [
+    [2, 2, 0, 0, 0, 0, 0, 0],
+    [1, 1, 1, 1, 0, 0, 0, 0],
+    [0, 0, 0, 1, 0, 0, 0, 0],
+    [0, 0, 0, 1, 0, 0, 0, 0],
+    [0, 0, 0, 1, 0, 0, 0, 0],
+    [0, 0, 0, 1, 1, 1, 1, 1],
+    [0, 0, 0, 0, 0, 0, 0, 0]
   ],
   "objects": [
     {
@@ -31,12 +24,15 @@
       "type": "door",
       "x": 4,
       "y": 5,
-      "state": "closed"
+      "state": "default"
     }
   ],
-  "character": {
-    "x": 0,
-    "y": 1,
-    "direction": "right"
-  }
+  "players": [
+    {
+      "id": 1,
+      "x": 0,
+      "y": 1,
+      "direction": "down"
+    }
+  ]
 }
