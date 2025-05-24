@@ -1,32 +1,25 @@
-import { StageCharacter } from './characters/StageCharacter';
+import { StageCharacterFactory } from './characters/StageCharacterFactory';
 import React, { useEffect, useState } from 'react';
 
 const StagePlayers = ({ cellSize, players }) => {
-  const [characters, setCharacters] = useState([]);
+  const [characterFactory] = useState(() => new StageCharacterFactory());
+
   useEffect(() => {
     if (players) {
-      const newCharacters = players.map((player) => {
-        const character = new StageCharacter(
-          player.id,
-          player.x,
-          player.y,
-          player.state,
-          player.direction,
-          player.inventory,
-          player.playerCodes,
-        );
-        return character;
+      players.forEach((player) => {
+        player.type = 'player';
       });
-      setCharacters(newCharacters);
+      characterFactory.loadFromJSON(players);
     }
+    //eslint-disable-next-line react-hooks/exhaustive-deps
   }, [players]);
 
   return (
     <div className='stage-players'>
-      {characters.map((player, index) => {
+      {characterFactory.getAllCharacters().map((player, index) => {
         const leftValue = player.x * cellSize.width;
         const topValue = player.y * cellSize.height;
-        const playerSize = cellSize.width * 0.6; // Assuming player occupies 80% of the cell
+        const playerSize = cellSize.width < cellSize.height ? cellSize.width * 0.8 : cellSize.height * 0.8; // Assuming player occupies 80% of the cell
 
         const getImage = player.getImage();
         return (

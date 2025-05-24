@@ -1,17 +1,17 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Container, Row, Col, Card, Button, ListGroup, Badge, Offcanvas } from 'react-bootstrap';
 import BlocklyEditor from '@/components/modules/blockly/BlocklyEditor';
 import BlocklyStage from '@/components/modules/blockly/BlocklyStage';
 import StageTest from '@/data/StageTest.json';
 import * as Blockly from 'blockly';
+import * as BlocklyJS from 'blockly/javascript';
 
 const ClassroomWorkspace = ({ role = 'owner' }) => {
   // 학생 및 선생님 데이터 상태
   const [students] = useState([]);
   const [editorShow, setEditorShow] = useState(false);
-  const [blocklyContext, setBlocklyContext] = useState(null);
-  const blocklyEditorRef = useRef(null);
+  const [blocklyCode, setBlocklyCode] = useState(null);
   const blocklyWorkspaceRef = useRef(null);
 
   const groups = [
@@ -23,35 +23,187 @@ const ClassroomWorkspace = ({ role = 'owner' }) => {
 
   const questInfo = '문제 설명입니다.';
 
+  // Worker instance for character execution
+  const [worker, setWorker] = useState(null);
+  const [isExecuting, setIsExecuting] = useState(false);
+  const tickIntervalRef = useRef(null);
+  const blocklyStageRef = useRef(null);
+
+  // Initialize worker when component mounts
+  useEffect(() => {
+    const newWorker = new Worker(new URL('../../workers/characterWorker.js', import.meta.url));
+    newWorker.onmessage = handleWorkerMessage;
+    setWorker(newWorker);
+
+    return () => {
+      if (newWorker) {
+        newWorker.terminate();
+      }
+      if (tickIntervalRef.current) {
+        clearInterval(tickIntervalRef.current);
+      }
+    };
+  }, []);
+
+  // Start/stop tick interval based on execution state
+  useEffect(() => {
+    if (isExecuting && worker) {
+      // Start ticking
+      tickIntervalRef.current = setInterval(() => {
+        worker.postMessage({ type: 'TICK' });
+      }, 100); // Tick every 100ms
+    } else {
+      // Stop ticking
+      if (tickIntervalRef.current) {
+        clearInterval(tickIntervalRef.current);
+        tickIntervalRef.current = null;
+      }
+    }
+  }, [isExecuting, worker]);
+
+  // Handle messages from the worker
+  const handleWorkerMessage = (event) => {
+    // eslint-disable-next-line no-unused-vars
+    const { type, characterId, result, error } = event.data;
+
+    switch (type) {
+      case 'ACTION_COMPLETE':
+        // Update stage with new character/object positions
+        if (result.characterUpdate && blocklyStageRef.current) {
+          blocklyStageRef.current.updateCharacter(result.characterUpdate);
+        }
+        if (result.objectsUpdate && blocklyStageRef.current) {
+          blocklyStageRef.current.updateObjects(result.objectsUpdate);
+        }
+        break;
+
+      case 'ERROR':
+        // Stop execution on error
+        setIsExecuting(false);
+        if (blocklyStageRef.current) {
+          blocklyStageRef.current.resetStage();
+        }
+        alert(`Error executing code: ${error}`);
+        break;
+
+      case 'COMPLETE':
+        // Code execution completed
+        setIsExecuting(false);
+        break;
+    }
+  };
+
   // 실행하기 버튼 클릭 핸들러
   const handleExecute = () => {
-    alert('실행');
+    if (!worker) return;
+
+    if (isExecuting) {
+      // Stop execution
+      worker.postMessage({ type: 'STOP' });
+      setIsExecuting(false);
+    } else {
+      // Check if workspace reference exists
+      if (!blocklyWorkspaceRef.current) {
+        alert('Workspace is not ready yet. Please try again.');
+        return;
+      }
+
+      // Start execution
+      const code = BlocklyJS.javascriptGenerator.workspaceToCode(blocklyWorkspaceRef.current);
+      console.log('Executing code:', code);
+
+      // Validate code exists
+      if (!code || code.trim() === '') {
+        alert('No code to execute. Please add some blocks to your workspace.');
+        return;
+      }
+
+      // Reset stage to initial state
+      if (blocklyStageRef.current) {
+        blocklyStageRef.current.resetStage();
+      }
+
+      worker.postMessage({
+        type: 'INIT',
+        gameState: testData,
+        characterId: Array.isArray(testData.players) ? testData.players[0].id : testData.players.id,
+        code: code,
+      });
+      worker.postMessage({
+        type: 'START',
+        characterId: Array.isArray(testData.players) ? testData.players[0].id : testData.players.id,
+      });
+      setIsExecuting(true);
+    }
   };
 
   const handleSubmit = () => {
-    alert('제출');
+    if (isExecuting) {
+      worker.postMessage({ type: 'STOP' });
+      setIsExecuting(false);
+    }
+
+    // 워크스페이스 참조 확인
+    if (!blocklyWorkspaceRef.current) {
+      alert('코드를 제출할 수 없습니다. 워크스페이스가 준비되지 않았습니다.');
+      handleClose();
+      return;
+    }
+
+    try {
+      // 코드 저장
+      const code = BlocklyJS.javascriptGenerator.workspaceToCode(blocklyWorkspaceRef.current);
+      const blocklyState = Blockly.serialization.workspaces.save(blocklyWorkspaceRef.current);
+      
+      // 코드 상태 저장
+      setBlocklyCode(blocklyState);
+
+      // 여기에 제출 로직 추가 (서버에 저장 등)
+      console.log('Submitting code:', code);
+      console.log('Blockly state:', blocklyState);
+
+      // 성공 메시지 표시
+      alert('코드가 성공적으로 제출되었습니다.');
+      
+      // 에디터 닫기
+      setEditorShow(false);
+    } catch (error) {
+      console.error('제출 중 오류 발생:', error);
+      alert('코드 제출 중 오류가 발생했습니다.');
+    }
+  };
+
+  const handleClose = () => {
+    // 워크스페이스 참조 확인 및 코드 저장
+    if (blocklyWorkspaceRef.current) {
+      try {
+        const blocklyCode = Blockly.serialization.workspaces.save(blocklyWorkspaceRef.current);
+        setBlocklyCode(blocklyCode);
+      } catch (error) {
+        console.error('Blockly 코드 저장 중 오류 발생:', error);
+      }
+    }
+    
+    // 에디터 닫기
     setEditorShow(false);
   };
 
   const handleCoingBtn = () => {
+    // 에디터 열기
     setEditorShow(true);
+    
+    // 이전에 저장된 코드가 있으면 콘솔에 출력 (디버깅용)
+    if (blocklyCode) {
+      console.log('Loading saved blockly code:', blocklyCode);
+    }
   };
 
-  const handleBlocklyEditorReady = useCallback((workspace) => {
-    blocklyWorkspaceRef.current = workspace;
-    if (workspace) {
-      workspace.addChangeListener((event) => {
-        if (!event.isUiEvent && event.type !== Blockly.Events.VIEWPORT_CHANGE) {
-          try {
-            const state = Blockly.serialization.workspaces.save(workspace);
-            setBlocklyContext(state);
-          } catch (e) {
-            console.error('Failed to save Blockly state:', e);
-          }
-        }
-      });
-    }
-  });
+  const handleBlocklyEditorReady = useCallback(
+    (workspace) => {
+      blocklyWorkspaceRef.current = workspace;
+    },
+    [blocklyWorkspaceRef],
+  );
 
   const getStatusBadge = (status) => {
     return status === 'active' ? (
@@ -102,15 +254,23 @@ const ClassroomWorkspace = ({ role = 'owner' }) => {
       <Container
         fluid
         className='m-0 p-0'
-        style={{ width: '100', height: '100vh' }}
+        style={{ width: '100', height: '85vh' }}
       >
         <Row
           className='d-flex flex-row p-0 m-0 w-100'
           style={{ height: '5%' }}
         >
           <Card className='m-0'>
-            <Card.Body className='p-0'>
-              <Card.Text className='m-0 p-0'>문제 풀이</Card.Text>
+            <Button
+              variant='primary'
+              className='m-0 text-wrap'
+              style={{ width: '13%', position: 'absolute', left: 0 }}
+              onClick={handleClose}
+            >
+              {'< '}문제 크게 보기
+            </Button>
+            <Card.Body className='p-0 d-flex align-items-center justify-content-center'>
+              <Card.Text className='m-0 p-0 fw-bold fs-3 text-center'>문제 풀기</Card.Text>
             </Card.Body>
           </Card>
         </Row>
@@ -122,7 +282,10 @@ const ClassroomWorkspace = ({ role = 'owner' }) => {
           <Container className='d-flex flex-column w-25 h-100 '>
             <Card className='m-0 h-25 p-0'>
               <Card.Body className='p-0'>
-                <BlocklyStage initialStage={testData} />
+                <BlocklyStage
+                  ref={blocklyStageRef}
+                  initialStage={testData}
+                />
               </Card.Body>
             </Card>
             <Card className='m-0 mt-3 h-75'>
@@ -146,8 +309,9 @@ const ClassroomWorkspace = ({ role = 'owner' }) => {
           {/* 코딩 에디터 컴포넌트 */}
           <Container className='d-flex w-75'>
             <BlocklyEditor
-              ref={blocklyEditorRef}
+              ref={blocklyWorkspaceRef}
               readOnly={false}
+              initialBlocks={blocklyCode}
               onWorkspaceReady={handleBlocklyEditorReady}
             />
           </Container>
@@ -176,7 +340,10 @@ const ClassroomWorkspace = ({ role = 'owner' }) => {
                   style={{ border: '1px solid #ccc', borderRadius: '8px', padding: '10px' }}
                 >
                   <div className='d-flex flex-grow-1 mb-2 h-50'>
-                    <BlocklyStage initialStage={testData} />
+                    <BlocklyStage
+                      ref={blocklyStageRef}
+                      initialStage={testData}
+                    />
                   </div>
                 </div>
 
@@ -184,12 +351,12 @@ const ClassroomWorkspace = ({ role = 'owner' }) => {
                 {role === 'owner' && (
                   <div className='d-flex justify-content-center mt-3 mb-2'>
                     <Button
-                      variant='success'
+                      variant={isExecuting ? 'danger' : 'success'}
                       className='px-5'
                       style={{ width: '200px' }}
                       onClick={handleExecute}
                     >
-                      실행하기
+                      {isExecuting ? '중지하기' : '실행하기'}
                     </Button>
                   </div>
                 )}

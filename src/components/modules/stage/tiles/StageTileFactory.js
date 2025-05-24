@@ -40,6 +40,11 @@ export class StageTileFactory {
     return this.tiles;
   }
 
+  static canStepOn(type) {
+    const typeName = this.tileTypes.get(type);
+    return typeName === 'grass' || typeName === 'path';
+  }
+
   loadFromListValues(tilesData) {
     this.tiles = [];
     for (let y = 0; y < tilesData.length; y++) {

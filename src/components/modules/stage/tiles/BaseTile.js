@@ -16,6 +16,10 @@ export class BaseTile {
     return null; // Override in subclasses
   }
 
+  isStepable() {
+    return false; // Override in subclasses
+  }
+
   toListValue() {
     return {
       type: this.type,

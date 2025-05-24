@@ -25,3 +25,5 @@ dist-ssr
 
 __test__
 .syncignore
+
+q-dev-*

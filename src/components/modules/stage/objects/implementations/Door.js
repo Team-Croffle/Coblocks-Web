@@ -27,7 +27,7 @@ export class Door extends InteractiveObject {
       const doorClosedImage = require('@/assets/images/objects/door_closed.png');
       return this.state === 'open' ? doorOpenImage : doorClosedImage;
     } catch {
-      return this.state === 'open' ? '🚪' : '🔒'; // Fallback
+      return this.state === 'open' ? '▢' : '🚪'; // Fallback
     }
   }
 }

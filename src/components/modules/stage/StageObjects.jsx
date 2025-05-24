@@ -4,7 +4,7 @@ import { StageObjectFactory } from './objects/StageObjectFactory';
 /**
  * Component that renders all stage objects
  */
-const StageObjects = ({ cellSize, objects, onObjectUpdate }) => {
+const StageObjects = ({ cellSize, objects }) => {
   const [objectFactory] = useState(() => new StageObjectFactory());
 
   useEffect(() => {
@@ -14,13 +14,6 @@ const StageObjects = ({ cellSize, objects, onObjectUpdate }) => {
     //eslint-disable-next-line react-hooks/exhaustive-deps
   }, [objects]);
 
-  const handleObjectInteraction = (objectId) => {
-    const result = objectFactory.interactWithObject(objectId);
-    if (result && onObjectUpdate) {
-      onObjectUpdate(objectFactory.toJSON());
-    }
-  };
-
   return (
     <div className='stage-objects'>
       {objectFactory.getAllObjects().map((object) => {
@@ -29,6 +22,7 @@ const StageObjects = ({ cellSize, objects, onObjectUpdate }) => {
         const image = object.getImage();
         const leftValue = object.x * cellSize.width;
         const topValue = object.y * cellSize.height;
+        const fontSize = cellSize.width < cellSize.height ? cellSize.width * 0.7 : cellSize.height * 0.7;
 
         return (
           <div
@@ -46,13 +40,12 @@ const StageObjects = ({ cellSize, objects, onObjectUpdate }) => {
               justifyContent: 'center',
               zIndex: 2,
             }}
-            onClick={() => handleObjectInteraction(object.id)}
           >
             {typeof image === 'string' ? (
               <div
                 style={{
                   color: 'white',
-                  fontSize: cellSize.width / 2,
+                  fontSize: fontSize,
                   fontWeight: 'bold',
                 }}
               >

@@ -9,6 +9,10 @@ export class StepableTile extends BaseTile {
     return null; // Override in subclasses
   }
 
+  isStepable() {
+    return true; // StepableTile은 항상 걸을 수 있음
+  }
+
   toListValue() {
     return {
       ...super.toListValue(),

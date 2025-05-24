@@ -16,11 +16,11 @@ The stage data object should have the following structure:
 ```javascript
 {
   // Stage dimensions (in grid cells)
-  "width": Number,       // Width of the stage grid (required)
-  "height": Number,      // Height of the stage grid (required)
+  "col": Number,       // number of the stage grid columns (required)
+  "row": Number,      // number of the stage grid rows (required)
   
   // Grid cells - defines the type of each cell in the grid
-  "grid": [
+  "tiles": [
     {
       "x": Number,       // X coordinate in the grid (0-based)
       "y": Number,       // Y coordinate in the grid (0-based)
@@ -43,7 +43,8 @@ The stage data object should have the following structure:
   ],
   
   // Character initial position and direction
-  "character": {
+  "players": {
+    "id": Number,
     "x": Number,         // Initial X coordinate in the grid
     "y": Number,         // Initial Y coordinate in the grid
     "direction": String  // Initial direction: "up", "down", "left", "right" (default: "right")
@@ -57,23 +58,16 @@ Here's a complete example of a stage data object:
 
 ```javascript
 {
-  "width": 8,
-  "height": 7,
-  "grid": [
-    {"x": 0, "y": 1, "type": "path"},
-    {"x": 1, "y": 1, "type": "path"},
-    {"x": 2, "y": 1, "type": "path"},
-    {"x": 3, "y": 1, "type": "path"},
-    {"x": 3, "y": 2, "type": "path"},
-    {"x": 3, "y": 3, "type": "path"},
-    {"x": 3, "y": 4, "type": "path"},
-    {"x": 3, "y": 5, "type": "path"},
-    {"x": 4, "y": 5, "type": "path"},
-    {"x": 5, "y": 5, "type": "path"},
-    {"x": 6, "y": 5, "type": "path"},
-    {"x": 7, "y": 5, "type": "path"},
-    {"x": 0, "y": 0, "type": "wall"},
-    {"x": 1, "y": 0, "type": "wall"}
+  "col": 8,
+  "row": 7,
+  "tiles": [
+    [2, 2, 0, 0, 0, 0, 0, 0],
+    [1, 1, 1, 1, 0, 0, 0, 0],
+    [0, 0, 0, 1, 0, 0, 0, 0],
+    [0, 0, 0, 1, 0, 0, 0, 0],
+    [0, 0, 0, 1, 0, 0, 0, 0],
+    [0, 0, 0, 1, 1, 1, 1, 1],
+    [0, 0, 0, 0, 0, 0, 0, 0]
   ],
   "objects": [
     {
@@ -89,43 +83,18 @@ Here's a complete example of a stage data object:
       "type": "door",
       "x": 4,
       "y": 5,
-      "state": "closed"
+      "state": "default"
     }
   ],
-  "character": {
-    "x": 0,
-    "y": 1,
-    "direction": "right"
-  }
+  "players": [
+    {
+      "id": 1,
+      "x": 0,
+      "y": 1,
+      "direction": "down"
+    }
+  ]
 }
-```
-
-## XML Format
-
-The stage data can also be provided as an XML string. Here's the equivalent XML structure:
-
-```xml
-<stage width="8" height="7">
-  <grid>
-    <cell x="0" y="1" type="path" />
-    <cell x="1" y="1" type="path" />
-    <cell x="2" y="1" type="path" />
-    <cell x="3" y="1" type="path" />
-    <cell x="3" y="2" type="path" />
-    <cell x="3" y="3" type="path" />
-    <cell x="3" y="4" type="path" />
-    <cell x="3" y="5" type="path" />
-    <cell x="4" y="5" type="path" />
-    <cell x="5" y="5" type="path" />
-    <cell x="6" y="5" type="path" />
-    <cell x="7" y="5" type="path" />
-    <cell x="0" y="0" type="wall" />
-    <cell x="1" y="0" type="wall" />
-  </grid>
-  <object id="button1" type="button" x="2" y="1" state="default" linkedTo="door1" />
-  <object id="door1" type="door" x="4" y="5" state="closed" />
-  <character x="0" y="1" direction="right" />
-</stage>
 ```
 
 ## Cell Types
@@ -162,7 +131,4 @@ import stageData from '@/data/StageTest.json';
 
 // Using a JSON string
 <BlocklyStage initialStage={JSON.stringify(stageData)} />
-
-// Using an XML string
-<BlocklyStage initialStage={`<stage width="8" height="7">...</stage>`} />
 ```
