@@ -34,7 +34,18 @@ export class StageCharacterFactory {
   loadFromJSON(charactersData) {
     this.characters.clear();
     charactersData.forEach((data) => {
-      this.create(data.type, data.id, data.x, data.y, 'idle', 'right');
+      // data.type에 따라 다른 캐릭터 생성 가능, playerCodes도 data에서 받을 수 있음
+      this.create(data.type || 'player', data.id, data.x, data.y, data.state || 'idle', data.direction || 'down');
+      const character = this.getCharacter(data.id);
+      if (character && data.playerCodes) {
+        character.setPlayerCodes(data.playerCodes);
+      }
+      if (character && data.inventory) {
+        // 초기 인벤토리 로드
+        // inventory 데이터 형식에 따라 실제 객체로 변환 필요
+        // 여기서는 BaseCharacter.fromJSON 등을 활용해야 할 수 있음
+        // 지금은 CommonCharacter 생성자에서 inventory가 빈 배열로 초기화됨
+      }
     });
   }
 

@@ -200,47 +200,58 @@ export const characterBlocks = () => {
 // JavaScript generator for custom blocks
 export const characterBlocksGenerator = () => {
   javascriptGenerator.forBlock['move_forward'] = function (block) {
-    return 'await actions.move(gameState.player.direction);\n';
+    // 'actions.move(gameState.player.direction)' 대신 'worker.moveForward()' 사용
+    return 'await worker.moveForward();\n';
   };
 
   javascriptGenerator.forBlock['turn_left'] = function (block) {
-    return 'await actions.turn("left");\n';
+    // 'actions.turn("left")' 대신 'worker.turnLeft()' 사용
+    return 'await worker.turnLeft();\n';
   };
 
   javascriptGenerator.forBlock['turn_right'] = function (block) {
-    return 'await actions.turn("right");\n';
+    // 'actions.turn("right")' 대신 'worker.turnRight()' 사용
+    return 'await worker.turnRight();\n';
   };
 
   javascriptGenerator.forBlock['interact'] = function (block) {
-    return 'await actions.interact();\n';
+    // 'actions.interact()' 대신 'worker.interact()' 사용
+    return 'await worker.interact();\n';
   };
 
   javascriptGenerator.forBlock['collect_item'] = function (block) {
-    return 'await actions.collect();\n';
+    // 'actions.collect()' 대신 'worker.pickUp()' 사용 (Worker.js의 pickUp 메소드에 매핑)
+    return 'await worker.pickUp();\n';
   };
 
   javascriptGenerator.forBlock['drop_item'] = function (block) {
-    return 'await actions.drop();\n';
+    // 'actions.drop()' 대신 'worker.drop()' 사용
+    return 'await worker.drop();\n';
   };
 
   javascriptGenerator.forBlock['wait'] = function (block) {
-    return 'await actions.wait();\n';
+    // 'actions.wait()' 대신 'worker.wait()' 사용 (Worker.js에 해당 메소드 추가 필요)
+    return 'await worker.wait();\n';
   };
 
   javascriptGenerator.forBlock['is_wall_ahead'] = function (block) {
-    return ['actions.isWallAhead()', javascriptGenerator.ORDER_FUNCTION_CALL];
+    // 'actions.isWallAhead()' 대신 'worker.isWallAhead()' 사용 (Worker.js에 해당 메소드 추가 필요)
+    return ['worker.isWallAhead()', javascriptGenerator.ORDER_FUNCTION_CALL];
   };
 
   javascriptGenerator.forBlock['is_object_ahead'] = function (block) {
-    return ['actions.isObjectAhead()', javascriptGenerator.ORDER_FUNCTION_CALL];
+    // 'actions.isObjectAhead()' 대신 'worker.isObjectAhead()' 사용 (Worker.js에 해당 메소드 추가 필요)
+    return ['worker.isObjectAhead()', javascriptGenerator.ORDER_FUNCTION_CALL];
   };
 
   javascriptGenerator.forBlock['is_door_open'] = function (block) {
-    return ['actions.isDoorOpen()', javascriptGenerator.ORDER_FUNCTION_CALL];
+    // 'actions.isDoorOpen()' 대신 'worker.isDoorOpen()' 사용 (Worker.js에 해당 메소드 추가 필요)
+    return ['worker.isDoorOpen()', javascriptGenerator.ORDER_FUNCTION_CALL];
   };
 
   javascriptGenerator.forBlock['has_item'] = function (block) {
-    return ['actions.hasItem()', javascriptGenerator.ORDER_FUNCTION_CALL];
+    // 'actions.hasItem()' 대신 'worker.hasItem()' 사용 (Worker.js에 해당 메소드 추가 필요)
+    return ['worker.hasItem()', javascriptGenerator.ORDER_FUNCTION_CALL];
   };
 };
 

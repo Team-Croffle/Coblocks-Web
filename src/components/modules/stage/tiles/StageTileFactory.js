@@ -40,12 +40,23 @@ export class StageTileFactory {
     return this.tiles;
   }
 
+  getBounds() {
+    return {
+      minX: 0,
+      minY: 0,
+      maxX: this.cols - 1,
+      maxY: this.rows - 1,
+    };
+  }
+
   static canStepOn(type) {
     const typeName = this.tileTypes.get(type);
     return typeName === 'grass' || typeName === 'path';
   }
 
-  loadFromListValues(tilesData) {
+  loadFromListValues(tilesData, rows, cols) {
+    this.rows = rows;
+    this.cols = cols;
     this.tiles = [];
     for (let y = 0; y < tilesData.length; y++) {
       for (let x = 0; x < tilesData[y].length; x++) {

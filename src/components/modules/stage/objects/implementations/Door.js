@@ -19,6 +19,10 @@ export class Door extends InteractiveObject {
     return true;
   }
 
+  isPassable() {
+    return this.state === 'open';
+  }
+
   getImage() {
     try {
       //eslint-disable-next-line no-undef

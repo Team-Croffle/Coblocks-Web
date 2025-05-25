@@ -9,12 +9,16 @@ export class Button extends InteractiveObject {
     return ['default', 'pressed'].includes(state);
   }
 
-  interact() {
+  interact(character) {
+    const previousState = this.state;
     if (this.state === 'default') {
       this.setState('pressed');
     } else {
       this.setState('default');
     }
+    console.log(
+      `Button ${this.id} interacted by ${character ? character.id : 'N/A'}. State: ${previousState} -> ${this.state}`,
+    );
     return true;
   }
 

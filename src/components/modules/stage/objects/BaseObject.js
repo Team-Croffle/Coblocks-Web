@@ -35,10 +35,12 @@ export class BaseObject {
     return null; // Override in subclasses
   }
 
-  isPassable() {
+  // eslint-disable-next-line no-unused-vars
+  isPassable(character) {
     return true; // 기본적으로 통과 가능, 서브클래스에서 오버라이드
   }
 
+  // eslint-disable-next-line no-unused-vars
   interact(character) {
     return false; // 기본적으로 상호작용 불가, 서브클래스에서 오버라이드
   }

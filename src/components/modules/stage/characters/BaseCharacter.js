@@ -98,6 +98,10 @@ export class BaseCharacter {
     return false;
   }
 
+  getPositionAndDirection() {
+    return { x: this.x, y: this.y, direction: this.direction };
+  }
+
   toJSON() {
     return {
       id: this.id,

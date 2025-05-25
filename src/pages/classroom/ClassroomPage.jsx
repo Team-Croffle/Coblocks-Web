@@ -2,21 +2,21 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { FaSyncAlt } from 'react-icons/fa';
 import { Button, Container, Row, Col, Card, Form, ListGroup, InputGroup, Toast } from 'react-bootstrap';
-import BlocklyEditor from '@modules/blockly/BlocklyEditor';
 import { useClassroom } from '@/contexts/ClassroomContext';
+import QuestListLayout from '@/components/layouts/QuestListLayout'; // 퀘스트 목록 레이아웃 컴포넌트
 import socketEvents from '@services/socketEvents'; // 소켓 이벤트 상수
 import { useNavigate } from 'react-router-dom';
-import * as Blockly from 'blockly';
+//import * as Blockly from 'blockly';
 import { getSupabaseAccessToken } from '@utils/supabase';
+import testquestList from '@/data/QuestTest.json'; // 테스트용 퀘스트 목록 데이터
 
 const ClassroomPage = () => {
   const [groups, setGroups] = useState([]); // 그룹 목록
   const [newGroupName, setNewGroupName] = useState(''); // 새 그룹 이름
   const [showToast, setShowToast] = useState(false);
-  const blocklyEditorRef = useRef(null);
   const chatInputRef = useRef(null); // 채팅 입력 필드 참조
   const navigate = useNavigate();
-  const workspaceRef = useRef(null); // Blockly 워크스페이스 인스턴스 저장
+  //  const workspaceRef = useRef(null); // Blockly 워크스페이스 인스턴스 저장
 
   const {
     socket,
@@ -102,18 +102,6 @@ const ClassroomPage = () => {
     }
   };
 
-  // 그룹 생성 처리
-  const handleCreateGroup = useCallback(() => {
-    if (newGroupName.trim() !== '' && socket && classroomInfo?.classroom_id) {
-      socket.emit(socketEvents.CREATE_GROUP, {
-        classroomId: classroomInfo.classroom_id,
-        groupName: newGroupName,
-      });
-      setNewGroupName('');
-    }
-  }, [socket, classroomInfo, newGroupName]);
-  // 그룹 생성 후 서버에서 응답을 받으면 그룹 목록을 업데이트하는 로직이 필요합니다.
-
   // 학생 목록 새로고침 처리 함수
   const handleRefreshParticipants = useCallback(() => {
     if (socket && classroomInfo) {
@@ -125,28 +113,6 @@ const ClassroomPage = () => {
     }
   }, [socket, classroomInfo]);
   // 참가자 목록을 새로고침하는 로직은 서버에서 응답을 받으면 처리해야 합니다.
-
-  const handleSave = () => {
-    // ref.current를 통해 BlocklyEditor 컴포넌트의 함수에 접근
-    const xml = blocklyEditorRef.current.getXml();
-    console.log('Current Blockly XML:', xml);
-
-    // Serialization 상태 가져오기 (최신 방식)
-    const state = blocklyEditorRef.current.getSerializationState();
-    console.log('Current Blockly State (Serialization):', JSON.stringify(state));
-
-    // 이 XML 또는 state를 서버로 전송하거나 로컬 스토리지에 저장
-  };
-
-  const handleLoad = () => {
-    // 저장된 XML 또는 상태 객체를 불러와 로드
-    const savedXml = '<xml>...</xml>'; // 불러온 XML 문자열
-    blocklyEditorRef.current.loadXml(savedXml);
-
-    // 저장된 Serialization 상태 객체 (JSON 파싱된 상태)
-    // const savedState = { ... };
-    // blocklyEditorRef.current.loadSerializationState(savedState);
-  };
 
   const handleSendChatMessage = useCallback(
     (messageText) => {
@@ -166,59 +132,64 @@ const ClassroomPage = () => {
     setTimeout(() => setShowToast(false), 1000);
   };
 
-  // 서버에서 받은 블록 상태를 적용하는 함수
-  const applyWorkspaceState = useCallback((state) => {
-    if (workspaceRef.current && Blockly && Blockly.serialization && Blockly.serialization.workspaces) {
-      try {
-        Blockly.serialization.workspaces.load(state, workspaceRef.current);
-      } catch (e) {
-        console.error('블록 상태 적용 실패:', e);
-      }
-    }
-  }, []);
+  // 퀘스트 선택 처리 함수 (예시로 alert 사용)
+  const handleSelectQuest = (questName) => {
+    alert(`${questName} 퀘스트를 선택했습니다!`);
+  };
 
-  // 소켓 이벤트 등록 (참여자용)
-  useEffect(() => {
-    if (!socket) return;
-    if (import.meta.env.VITE_RUNNING_MODE === 'development') {
-      console.log('Socket is ready:', socket);
-    }
-    const handleReceiveBlocks = (data) => {
-      if (import.meta.env.VITE_RUNNING_MODE === 'development') {
-        console.log('Received blockly state:', data);
-      }
-      if (data) {
-        applyWorkspaceState(data);
-      }
-    };
-    socket.on(socketEvents.EDITOR_STATE_SYNC, handleReceiveBlocks);
-    return () => {
-      socket.off(socketEvents.EDITOR_STATE_SYNC, handleReceiveBlocks);
-    };
-  }, [socket, applyWorkspaceState]);
-
-  // 매니저가 블록을 변경할 때 서버로 전송
-  const handleWorkspaceReady = useCallback(
-    (workspace) => {
-      workspaceRef.current = workspace;
-      if (isManager && workspace) {
-        workspace.addChangeListener((event) => {
-          if (!event.isUiEvent && event.type !== Blockly.Events.VIEWPORT_CHANGE) {
-            try {
-              const state = Blockly.serialization.workspaces.save(workspace);
-              if (import.meta.env.VITE_RUNNING_MODE === 'development') {
-                console.log('Sending blockly state update:', state);
-              }
-              socket.emit(socketEvents.EDITOR_CONTENT_CHANGE, state);
-            } catch (e) {
-              console.error('블록 상태 전송 실패:', e);
-            }
-          }
-        });
-      }
-    },
-    [isManager, socket],
-  );
+  //  // 서버에서 받은 블록 상태를 적용하는 함수
+  //  const applyWorkspaceState = useCallback((state) => {
+  //    if (workspaceRef.current && Blockly && Blockly.serialization && Blockly.serialization.workspaces) {
+  //      try {
+  //        Blockly.serialization.workspaces.load(state, workspaceRef.current);
+  //      } catch (e) {
+  //        console.error('블록 상태 적용 실패:', e);
+  //      }
+  //    }
+  //  }, []);
+  //
+  //  // 소켓 이벤트 등록 (참여자용)
+  //  useEffect(() => {
+  //    if (!socket) return;
+  //    if (import.meta.env.VITE_RUNNING_MODE === 'development') {
+  //      console.log('Socket is ready:', socket);
+  //    }
+  //    const handleReceiveBlocks = (data) => {
+  //      if (import.meta.env.VITE_RUNNING_MODE === 'development') {
+  //        console.log('Received blockly state:', data);
+  //      }
+  //      if (data) {
+  //        applyWorkspaceState(data);
+  //      }
+  //    };
+  //    socket.on(socketEvents.EDITOR_STATE_SYNC, handleReceiveBlocks);
+  //    return () => {
+  //      socket.off(socketEvents.EDITOR_STATE_SYNC, handleReceiveBlocks);
+  //    };
+  //  }, [socket, applyWorkspaceState]);
+  //
+  //  // 매니저가 블록을 변경할 때 서버로 전송
+  //  const handleWorkspaceReady = useCallback(
+  //    (workspace) => {
+  //      workspaceRef.current = workspace;
+  //      if (isManager && workspace) {
+  //        workspace.addChangeListener((event) => {
+  //          if (!event.isUiEvent && event.type !== Blockly.Events.VIEWPORT_CHANGE) {
+  //            try {
+  //              const state = Blockly.serialization.workspaces.save(workspace);
+  //              if (import.meta.env.VITE_RUNNING_MODE === 'development') {
+  //                console.log('Sending blockly state update:', state);
+  //              }
+  //              socket.emit(socketEvents.EDITOR_CONTENT_CHANGE, state);
+  //            } catch (e) {
+  //              console.error('블록 상태 전송 실패:', e);
+  //            }
+  //          }
+  //        });
+  //      }
+  //    },
+  //    [isManager, socket],
+  //  );
 
   const LeftMenu = () => (
     <div className='d-flex flex-column mt-3'>
@@ -227,7 +198,7 @@ const ClassroomPage = () => {
       </div>
       <div className='mb-5 mt-4'>
         <div className='d-flex justify-content-between align-items-center'>
-          <h4>학생 목록</h4>
+          <h4>참여자 목록</h4>
           <Button
             variant='outline-secondary'
             size='sm'
@@ -248,34 +219,6 @@ const ClassroomPage = () => {
             })
           ) : (
             <ListGroup.Item>참여한 학생이 없습니다.</ListGroup.Item>
-          )}
-        </ListGroup>
-      </div>
-
-      <div>
-        <h4 className='mt-4'>문제풀이 그룹</h4>
-        <InputGroup className='mb-3 mt-3'>
-          <Form.Control
-            placeholder='그룹 이름'
-            value={newGroupName}
-            onChange={(e) => {
-              setNewGroupName(e.target.value);
-            }}
-          />
-          <Button
-            variant='primary'
-            onClick={handleCreateGroup}
-          >
-            생성
-          </Button>
-        </InputGroup>
-        <ListGroup>
-          {groups && groups.length > 0 ? (
-            groups.map((group) => {
-              return <ListGroup.Item key={group}>{group}</ListGroup.Item>;
-            })
-          ) : (
-            <ListGroup.Item>생성된 그룹이 없습니다.</ListGroup.Item>
           )}
         </ListGroup>
       </div>
@@ -429,7 +372,7 @@ const ClassroomPage = () => {
 
         {/* 중앙 패널 */}
         <Col
-          md={8}
+          md={7}
           className='d-flex flex-column align-items-center bg-white'
           style={{ height: '100%' }}
         >
@@ -437,18 +380,17 @@ const ClassroomPage = () => {
             className='editor-container flex-grow-1 w-100 px-3 pt-3'
             style={{ border: '1px solid #ccc', overflow: 'hidden' }}
           >
-            <BlocklyEditor
-              ref={blocklyEditorRef}
-              readOnly={!isManager}
-              blocklyOptions={blocklyEditorZoomOptions}
-              onWorkspaceReady={handleWorkspaceReady}
+            <QuestListLayout
+              QuestList={testquestList.data}
+              isOwner={isManager}
+              handleSelectQuest={handleSelectQuest}
             />
           </div>
         </Col>
 
         {/* 오른쪽 패널: 초대 코드 + 채팅 */}
         <Col
-          md={2}
+          md={3}
           className='bg-light d-flex flex-column p-3 border-start shadow-sm'
           style={{ height: '100%' }}
         >
