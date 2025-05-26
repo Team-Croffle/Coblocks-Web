@@ -10,21 +10,21 @@ export class StageObjectFactory {
   constructor() {
     this.objects = new Map();
     this.objectFactories = new Map([
-      ['key', (id, x, y) => new Key(id, x, y)],
-      ['box', (id, x, y) => new Box(id, x, y)],
-      ['button', (id, x, y) => new Button(id, x, y)],
-      ['door', (id, x, y) => new Door(id, x, y)],
+      ['key', (id, x, y, color) => new Key(id, x, y, color)],
+      ['box', (id, x, y, color) => new Box(id, x, y, color)],
+      ['button', (id, x, y, color) => new Button(id, x, y, color)],
+      ['door', (id, x, y, color) => new Door(id, x, y, color)],
     ]);
   }
 
   // Create and add a new object
-  createObject(id, type, x, y) {
+  createObject(id, type, x, y, color) {
     const factory = this.objectFactories.get(type);
     if (!factory) {
       throw new Error(`Unknown object type: ${type}`);
     }
 
-    const object = factory(id, x, y);
+    const object = factory(id, x, y, color);
     this.objects.set(id, object);
     return object;
   }
@@ -93,7 +93,7 @@ export class StageObjectFactory {
   loadFromJSON(objectsData) {
     this.objects.clear();
     objectsData.forEach((data) => {
-      const object = this.createObject(data.id, data.type, data.x, data.y);
+      const object = this.createObject(data.id, data.type, data.x, data.y, data.color);
       if (object.state) {
         object.setState(data.state);
       }

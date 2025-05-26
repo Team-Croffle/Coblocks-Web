@@ -9,6 +9,10 @@ export class UnstepableTile extends BaseTile {
     return null; // Override in subclasses
   }
 
+  isStepable() {
+    return false; // Unstepable tiles are never stepable
+  }
+
   toListValue() {
     return {
       ...super.toListValue(),

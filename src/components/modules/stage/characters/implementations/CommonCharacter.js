@@ -14,10 +14,10 @@ export class CommonCharacter extends BaseCharacter {
     super(id, x, y, state, direction, inventory, playerCodes);
 
     this.playerColor = new Map([
-      [1, '#FF6666'],
-      [2, '#99FF99'],
-      [3, '#EE99FF'],
-      [4, '#99FFFF'],
+      [1, '#99FF99'],
+      [2, '#FFBB44'],
+      [3, '#99FFFF'],
+      [4, '#EE99FF'],
     ]);
   }
 

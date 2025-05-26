@@ -8,12 +8,11 @@ import socketEvents from '@services/socketEvents'; // 소켓 이벤트 상수
 import { useNavigate } from 'react-router-dom';
 //import * as Blockly from 'blockly';
 import { getSupabaseAccessToken } from '@utils/supabase';
-import testquestList from '@/data/QuestTest.json'; // 테스트용 퀘스트 목록 데이터
 
 const ClassroomPage = () => {
-  const [groups, setGroups] = useState([]); // 그룹 목록
-  const [newGroupName, setNewGroupName] = useState(''); // 새 그룹 이름
+  const [questList, setQuestList] = useState(null); // 퀘스트 목록 상태
   const [showToast, setShowToast] = useState(false);
+  const [isSeleted, setIsSelected] = useState(false); // 퀘스트 선택 여부 상태
   const chatInputRef = useRef(null); // 채팅 입력 필드 참조
   const navigate = useNavigate();
   //  const workspaceRef = useRef(null); // Blockly 워크스페이스 인스턴스 저장
@@ -24,8 +23,11 @@ const ClassroomPage = () => {
     participants, // 참가자 목록
     classroomInfo, // 강의실 정보
     isManager, // 강의실 관리자 여부
+    questInfo,
+    setParticipants,
     // setClassroomInfo, // 강의실 정보 설정 함수ㄹ
     // socketClose, // 소켓을 명시적으로 닫아야 할 때 사용
+    setQuestInfo, // 퀘스트 정보 업데이트 함수 (필요시 사용)
   } = useClassroom();
 
   const inviteCode = classroomInfo?.classroom_code || '로딩 중...'; // 초대 코드 (로딩 중일 때는 '로딩 중...' 표시)
@@ -63,9 +65,29 @@ const ClassroomPage = () => {
         if (!classroomInfo?.classroom_id) console.warn('Classroom ID is not available yet.');
       }
     }
-    console.log(participants);
+    getQuestList(); // 컴포넌트가 마운트될 때 퀘스트 목록을 가져옵니다
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const getQuestList = async () => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/classrooms/${classroomInfo.classroom_code}/quest`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${await getSupabaseAccessToken()}`,
+          },
+        },
+      );
+      const data = await response.json();
+      setQuestList(data.questSummary);
+    } catch (error) {
+      console.error('퀘스트 목록을 가져오는 중 오류 발생:', error);
+      alert('퀘스트 목록을 가져오는 중 오류가 발생했습니다.');
+    }
+  };
 
   // 강의실 나가기 처리
   const handleLeaveClass = async () => {
@@ -109,7 +131,16 @@ const ClassroomPage = () => {
         console.log('Requesting participants list refresh for classroom:', classroomInfo.classroom_id);
       }
       // 서버에 참여자 목록 갱신을 요청하는 이벤트 (이벤트명은 백엔드와 협의 필요)
-      socket.emit(socketEvents.REQUEST_PARTICIPANTS_LIST, { classroomId: classroomInfo.classroom_id });
+      socket.emit(socketEvents.REFRESH_PARTICIPANT_LIST, (obj) => {
+        if (obj) {
+          if (obj.success) {
+            setParticipants(obj.users); // 서버에서 받은 참여자 목록으로 상태 업데이트
+          } else {
+            console.error('참여자 목록 갱신 실패:', obj.message);
+            alert('참여자 목록 갱신에 실패했습니다: ' + obj.message);
+          }
+        }
+      });
     }
   }, [socket, classroomInfo]);
   // 참가자 목록을 새로고침하는 로직은 서버에서 응답을 받으면 처리해야 합니다.
@@ -133,8 +164,22 @@ const ClassroomPage = () => {
   };
 
   // 퀘스트 선택 처리 함수 (예시로 alert 사용)
-  const handleSelectQuest = (questName) => {
-    alert(`${questName} 퀘스트를 선택했습니다!`);
+  const handleSelectQuest = (quest_id) => {
+    socket.emit(socketEvents.SELECT_PROBLEM_SET, { quest_id: quest_id });
+  };
+
+  useEffect(() => {
+    console.log('퀘스트 정보 업데이트:', questInfo);
+    if (questInfo?.quest_id) {
+      setIsSelected(true); // 퀘스트가 선택되면 상태 업데이트
+    } else {
+      setIsSelected(false); // 퀘스트가 선택되지 않으면 상태 업데이트
+    }
+    console.log('퀘스트 선택 여부:', isSeleted);
+  }, [questInfo]);
+
+  const handleStartActivity = async () => {
+    socket.emit(socketEvents.START_ACTIVITY);
   };
 
   //  // 서버에서 받은 블록 상태를 적용하는 함수
@@ -148,25 +193,6 @@ const ClassroomPage = () => {
   //    }
   //  }, []);
   //
-  //  // 소켓 이벤트 등록 (참여자용)
-  //  useEffect(() => {
-  //    if (!socket) return;
-  //    if (import.meta.env.VITE_RUNNING_MODE === 'development') {
-  //      console.log('Socket is ready:', socket);
-  //    }
-  //    const handleReceiveBlocks = (data) => {
-  //      if (import.meta.env.VITE_RUNNING_MODE === 'development') {
-  //        console.log('Received blockly state:', data);
-  //      }
-  //      if (data) {
-  //        applyWorkspaceState(data);
-  //      }
-  //    };
-  //    socket.on(socketEvents.EDITOR_STATE_SYNC, handleReceiveBlocks);
-  //    return () => {
-  //      socket.off(socketEvents.EDITOR_STATE_SYNC, handleReceiveBlocks);
-  //    };
-  //  }, [socket, applyWorkspaceState]);
   //
   //  // 매니저가 블록을 변경할 때 서버로 전송
   //  const handleWorkspaceReady = useCallback(
@@ -222,6 +248,15 @@ const ClassroomPage = () => {
           )}
         </ListGroup>
       </div>
+      {/* 확동시작작 버튼 */}
+      <Button
+        variant={isSeleted ? 'success' : 'secondary'}
+        className='mt-3'
+        onClick={handleStartActivity}
+        disabled={isSeleted === false}
+      >
+        활동시작
+      </Button>
     </div>
   );
 
@@ -381,7 +416,7 @@ const ClassroomPage = () => {
             style={{ border: '1px solid #ccc', overflow: 'hidden' }}
           >
             <QuestListLayout
-              QuestList={testquestList.data}
+              QuestList={questList}
               isOwner={isManager}
               handleSelectQuest={handleSelectQuest}
             />

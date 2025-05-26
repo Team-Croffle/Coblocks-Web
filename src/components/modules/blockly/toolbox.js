@@ -22,6 +22,10 @@ export const characterToolbox = {
           kind: 'block',
           type: 'turn_right',
         },
+        {
+          kind: 'block',
+          type: 'wait_and_move',
+        },
       ],
     },
     {
@@ -120,6 +124,16 @@ export const characterBlocks = () => {
     },
   };
 
+  Blockly.Blocks['wait_and_move'] = {
+    init: function () {
+      this.appendDummyInput().appendField('기다리고 이동');
+      this.setPreviousStatement(true, null);
+      this.setNextStatement(true, null);
+      this.setColour(230);
+      this.setTooltip('한 턴 기다린 후 앞으로 이동합니다.');
+    },
+  };
+
   Blockly.Blocks['interact'] = {
     init: function () {
       this.appendDummyInput().appendField('상호작용하기');
@@ -212,6 +226,11 @@ export const characterBlocksGenerator = () => {
   javascriptGenerator.forBlock['turn_right'] = function (block) {
     // 'actions.turn("right")' 대신 'worker.turnRight()' 사용
     return 'await worker.turnRight();\n';
+  };
+
+  javascriptGenerator.forBlock['wait_and_move'] = function (block) {
+    // 'actions.waitAndMove()' 대신 'worker.waitAndMove()' 사용
+    return 'await worker.waitAndMove();\n';
   };
 
   javascriptGenerator.forBlock['interact'] = function (block) {

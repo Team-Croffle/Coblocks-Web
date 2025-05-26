@@ -63,7 +63,7 @@ const QuestListLayout = ({ QuestList, isOwner, handleSelectQuest }) => {
                   <Button
                     variant='primary'
                     size='sm'
-                    onClick={() => handleSelectQuest(quest.quest_name)}
+                    onClick={() => handleSelectQuest(quest.quest_id)}
                   >
                     선택하기
                   </Button>

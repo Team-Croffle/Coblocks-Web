@@ -4,12 +4,13 @@ import { StageObjectFactory } from './objects/StageObjectFactory';
 import { StageTileFactory } from './tiles/StageTileFactory';
 import { Worker } from './Worker';
 
-const Stage = ({ cellSize, stageData, onStageChange, onStartButtonClicked, playerBlockCode, activePlayerId }) => {
+const Stage = ({ cellSize, stageData, onStageChange, onStartButtonClicked, activityInfo }) => {
   const [tileFactory] = useState(() => new StageTileFactory());
   const [objectFactory] = useState(() => new StageObjectFactory());
   const [playerFactory] = useState(() => new StageCharacterFactory());
 
-  const workerRef = useRef(null);
+  const workersRef = useRef({}); // 각 캐릭터 ID를 키로 하여 Worker 인스턴스 저장
+  const executionStartedRef = useRef(false); // 실행 시작 여부를 추적하는 ref
   const [characterMessages, setCharacterMessages] = useState({});
   const [forceUpdate, setForceUpdate] = useState(0);
 
@@ -21,12 +22,16 @@ const Stage = ({ cellSize, stageData, onStageChange, onStartButtonClicked, playe
       if (actionType === 'speak') {
         setCharacterMessages((prev) => ({
           ...prev,
-          [payload.characterId]: { message: payload.message, id: Date.now() },
+          [payload.characterId]: { message: payload.message, id: payload.id || Date.now() }, // payload.id가 있으면 사용
         }));
         setTimeout(() => {
           setCharacterMessages((prev) => {
             const newMessages = { ...prev };
-            if (newMessages[payload.characterId] && newMessages[payload.characterId].id === payload.id) {
+            // 메시지 ID를 기준으로 삭제 (동일 ID의 메시지가 여러번 표시되는 것 방지)
+            if (
+              newMessages[payload.characterId] &&
+              newMessages[payload.characterId].id === (payload.id || Date.now())
+            ) {
               delete newMessages[payload.characterId];
             }
             return newMessages;
@@ -58,31 +63,109 @@ const Stage = ({ cellSize, stageData, onStageChange, onStartButtonClicked, playe
           players: playerFactory.getAllCharacters(),
         });
       }
+      executionStartedRef.current = false; // 스테이지 데이터가 새로 로드되면 실행 플래그 초기화
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stageData]);
 
   useEffect(() => {
-    if (onStartButtonClicked && playerBlockCode && activePlayerId) {
-      const characterToRun = playerFactory.getCharacter(activePlayerId);
-      if (characterToRun) {
-        if (!workerRef.current || workerRef.current.characterId !== activePlayerId) {
-          workerRef.current = new Worker(activePlayerId, tileFactory, objectFactory, playerFactory, handleWorkerAction);
-        }
-        workerRef.current.runCode(playerBlockCode).catch((err) => console.error('Error running code from Stage:', err));
-      } else {
-        console.warn(`Player ${activePlayerId} not found for running code.`);
+    // 실행 트리거가 활성화되었을 때의 처리
+    if (onStartButtonClicked) {
+      if (executionStartedRef.current) {
+        console.log('Stage.jsx: Execution already started, skipping duplicate run.');
+        return; // 이미 실행 시작됨, 중복 실행 방지
       }
+      console.log('Stage.jsx: Execution triggered. Checking activity info...', {
+        hasActivityInfo: !!activityInfo,
+        hasAssignments: !!activityInfo?.allParticipantAssignments,
+        hasSubmissions: !!activityInfo?.finalSubmissionsData,
+      });
+
+      // 필요한 데이터가 모두 있는지 확인
+      if (!activityInfo || !activityInfo.allParticipantAssignments || !activityInfo.finalSubmissionsData) {
+        console.warn('Stage.jsx: Missing required activity data for execution', {
+          hasActivityInfo: !!activityInfo,
+          hasAssignments: !!activityInfo?.allParticipantAssignments,
+          hasSubmissions: !!activityInfo?.finalSubmissionsData,
+        });
+        return;
+      }
+
+      executionStartedRef.current = true; // 실행 시작 플래그 설정
+
+      // 기존 Worker 인스턴스들 정리
+      Object.values(workersRef.current).forEach((worker) => {
+        if (worker && worker.terminate) {
+          worker.terminate();
+        }
+      });
+      workersRef.current = {};
+
+      // 모든 참가자의 코드 실행 준비
+      const executionPromises = activityInfo.allParticipantAssignments.map(async (assignment) => {
+        const userId = assignment.userId;
+        const submission = activityInfo.finalSubmissionsData[userId];
+
+        if (!submission || !submission.content || !submission.partNumber) {
+          console.warn(`Stage.jsx: No valid submission found for user ${userId}`);
+          return null;
+        }
+
+        const characterPartNumber = submission.partNumber;
+        const codeToRun = submission.content;
+        const characterToRun = playerFactory.getCharacter(characterPartNumber);
+
+        if (!characterToRun) {
+          console.warn(`Stage.jsx: Character ${characterPartNumber} not found for user ${userId}`);
+          return null;
+        }
+
+        // Worker 인스턴스 생성
+        console.log(`Stage.jsx: Creating Worker for character ${characterPartNumber}`);
+        workersRef.current[characterPartNumber] = new Worker(
+          characterPartNumber,
+          tileFactory,
+          objectFactory,
+          playerFactory,
+          handleWorkerAction,
+        );
+
+        try {
+          // 코드 실행
+          console.log(`Stage.jsx: Running code for character ${characterPartNumber}`);
+          await workersRef.current[characterPartNumber].runCode(codeToRun);
+          return characterPartNumber;
+        } catch (error) {
+          console.error(`Stage.jsx: Error running code for character ${characterPartNumber}:`, error);
+          return null;
+        }
+      });
+
+      // 모든 코드 실행 완료 후 처리
+      Promise.all(executionPromises)
+        .then((results) => {
+          const successfulExecutions = results.filter((result) => result !== null);
+          console.log(
+            `Stage.jsx: Code execution completed. Successfully executed for characters:`,
+            successfulExecutions,
+          );
+          rerenderStage();
+        })
+        .catch((error) => {
+          console.error('Stage.jsx: Error during code execution:', error);
+        });
+    } else {
+      // onStartButtonClicked가 false가 되면 실행 플래그도 리셋
+      executionStartedRef.current = false;
+      // Worker 인스턴스 정리 (실행이 중지될 때)
+      Object.values(workersRef.current).forEach((worker) => {
+        if (worker && worker.terminate) {
+          worker.terminate();
+        }
+      });
+      workersRef.current = {};
     }
-  }, [
-    onStartButtonClicked,
-    playerBlockCode,
-    activePlayerId,
-    playerFactory,
-    tileFactory,
-    objectFactory,
-    handleWorkerAction,
-  ]);
+  }, [onStartButtonClicked, activityInfo, playerFactory, tileFactory, objectFactory, handleWorkerAction]);
 
   const tiles = tileFactory.getAllTiles();
   const objects = objectFactory.getAllObjects().filter((obj) => !(obj.isCollected && obj.state === 'collected'));
@@ -160,18 +243,12 @@ const Stage = ({ cellSize, stageData, onStageChange, onStartButtonClicked, playe
             key={`obj-${obj.id}`}
             style={containerStyle}
           >
-            {typeof image === 'string' && image.length > 2 ? (
-              <img
-                src={image}
-                alt={obj.type}
-                style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                draggable={false}
-              />
-            ) : (
-              <div style={image && image.style ? image.style : { width: '100%', height: '100%' }}>
-                {typeof image === 'string' ? image : ''}
-              </div>
-            )}
+            <img
+              src={image}
+              alt={obj.type}
+              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+              draggable={false}
+            />
           </div>
         );
       })}
@@ -273,9 +350,6 @@ const Stage = ({ cellSize, stageData, onStageChange, onStartButtonClicked, playe
             bottom: 0,
           };
         }
-
-        if (player.direction === 'left') containerStyle.transform = 'scaleX(-1)';
-        else if (player.direction === 'right') containerStyle.transform = 'scaleX(1)';
 
         const message = characterMessages[player.id];
         const messageBubbleStyle = {

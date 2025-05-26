@@ -11,6 +11,7 @@ export class Worker {
   }
 
   _logAction(message, isError = false) {
+    console.error('test');
     console.log(`Worker (Char ${this.characterId}): ${message}`);
     if (this.onAction) {
       this.onAction('speak', { characterId: this.characterId, message, isError });
@@ -86,6 +87,60 @@ export class Worker {
     await this._delay(150);
   }
 
+  async waitAndMove() {
+    if (!this.character) return;
+    const { x, y, direction } = this.character.getPositionAndDirection();
+    let dx = 0,
+      dy = 0;
+    if (direction === 'up') dy = -1;
+    else if (direction === 'down') dy = 1;
+    else if (direction === 'left') dx = -1;
+    else if (direction === 'right') dx = 1;
+
+    const nextX = x + dx;
+    const nextY = y + dy;
+
+    const bounds = this.tileFactory.getBounds();
+    if (nextX < bounds.minX || nextX > bounds.maxX || nextY < bounds.minY || nextY > bounds.maxY) {
+      this._logAction('맵의 가장자리에 도달하여 더 이상 앞으로 갈 수 없습니다.', true);
+      return;
+    }
+
+    const targetTile = this.tileFactory.getTileAt(nextX, nextY);
+    if (!targetTile || !targetTile.isStepable()) {
+      this._logAction('앞에 길이 없어 앞으로 갈 수 없습니다.', true);
+      return;
+    }
+
+    while (true) {
+      let canPass = true;
+      const objectsAtNextPos = this.objectFactory.getObjectsAt(nextX, nextY);
+      for (const obj of objectsAtNextPos) {
+        if (!obj) return; // 객체가 없으면 종료
+        if (!obj.isPassable(this.character)) {
+          this._logAction(`기다리는중`);
+          canPass = false;
+        }
+      }
+      if (canPass) {
+        this._logAction('앞으로 갈 수 있습니다.');
+        break;
+      }
+      await this._delay(1000);
+    }
+
+    this.character.setState('walking');
+    if (this.onAction) this.onAction('stateChange', { characterId: this.characterId, state: 'walking' });
+    await this._delay(300);
+
+    this.character.setPosition(nextX, nextY);
+    this.character.setState('idle');
+    if (this.onAction) {
+      this.onAction('move', { characterId: this.characterId, x: nextX, y: nextY });
+      this.onAction('stateChange', { characterId: this.characterId, state: 'idle' });
+    }
+  }
+
   async interact() {
     if (!this.character) return;
     const { x, y, direction } = this.character.getPositionAndDirection();
@@ -116,7 +171,7 @@ export class Worker {
           if (linkedId) {
             const linkedObject = this.objectFactory.getObject(linkedId);
             if (linkedObject && typeof linkedObject.interact === 'function') {
-              linkedObject.interact(this.character); // 연결된 객체도 상호작용
+              linkedObject.interact(obj); // 연결된 객체도 상호작용
               if (this.onAction)
                 this.onAction('objectUpdate', { objectId: linkedObject.id, newState: linkedObject.getState() });
             }
