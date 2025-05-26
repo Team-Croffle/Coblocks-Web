@@ -4,7 +4,7 @@ import { AiOutlineUser, AiFillHome } from 'react-icons/ai';
 import { FaSchool } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
 import { Container, Nav, Navbar, Button, Dropdown } from 'react-bootstrap';
-import mainLogo from '@images/Logo/mainlogo-bg-tp.png';
+import mainLogo from '@assets/images/Logo/minilogo-bg-tp.png';
 import supabase from '@utils/supabase'; // Supabase client import
 
 const NavigationBar = () => {
@@ -99,9 +99,10 @@ const NavigationBar = () => {
   return (
     <Navbar
       expand='lg'
-      className='bg-secondary shadow py-3'
+      className='shadow py-3'
       expanded={isNavbarExpanded}
       onToggle={setIsNavbarExpanded}
+      style={{ backgroundColor: '#5193d9' }} // 살짝 진한 하늘색 배경색 설정
     >
       <Container>
         <Navbar.Toggle

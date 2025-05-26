@@ -24,6 +24,6 @@ dist-ssr
 *.sw?
 
 __test__
-.syncignore
 
 q-dev-*
+.syncignore
