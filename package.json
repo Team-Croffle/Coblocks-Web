@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "echo \"Note: Testing is not configured yet. Install a test runner like Vitest or Jest to run tests.\""
   },
   "dependencies": {
     "@supabase/ssr": "^0.6.1",

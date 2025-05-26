@@ -4,16 +4,21 @@
     "baseUrl": "src",
     "paths": {
       "@/*": ["*"],
-      "@pages/*": ["pages/*"],
-      "@layouts/*": ["components/layouts/*"],
-      "@modules/*": ["components/modules/*"],
       "@assets/*": ["assets/*"],
-      "@images/*": ["assets/images/*"],
+      "@constants/*": ["constants/*"],
+      "@contexts/*": ["contexts/*"],
+      "@data/*": ["data/*"],
       "@fonts/*": ["assets/fonts/*"],
-      "@styles/*": ["assets/styles/*"],
-      "@utils/*": ["utils/*"],
       "@hooks/*": ["hooks/*"],
+      "@images/*": ["assets/images/*"],
       "@langs/*": ["langs/*"],
+      "@layouts/*": ["components/layouts/*"],
+      "@modals/*": ["components/modals/*"],
+      "@modules/*": ["components/modules/*"],
+      "@pages/*": ["pages/*"],
+      "@services/*": ["services/*"],
+      "@styles/*": ["assets/styles/*"],
+      "@utils/*": ["utils/*"]
     }
   }
 }

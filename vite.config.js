@@ -18,6 +18,7 @@ export default defineConfig({
       '@images': path.resolve(__dirname, './src/assets/images'),
       '@langs': path.resolve(__dirname, './src/langs'),
       '@layouts': path.resolve(__dirname, './src/components/layouts'),
+      '@modals': path.resolve(__dirname, './src/components/modals'),
       '@modules': path.resolve(__dirname, './src/components/modules'),
       '@pages': path.resolve(__dirname, './src/pages'),
       '@services': path.resolve(__dirname, './src/services'),
