@@ -313,7 +313,7 @@ const ClassroomContextProvider = ({ children }) => {
             );
           }
 
-          useTimeout(() => {
+          setTimeout(() => {
             setIsRunTrigger(false);
             if (import.meta.env.VITE_RUNNING_MODE === 'development') {
               console.log('isRunTrigger reset to false after 5 seconds');

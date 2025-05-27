@@ -102,7 +102,7 @@ const NavigationBar = () => {
       className='shadow py-3'
       expanded={isNavbarExpanded}
       onToggle={setIsNavbarExpanded}
-      style={{ backgroundColor: '#5193d9' }} // 살짝 진한 하늘색 배경색 설정
+      style={{ backgroundColor: '#5193d9', height: '90px' }} // 살짝 진한 하늘색 배경색 설정
     >
       <Container>
         <Navbar.Toggle
@@ -121,7 +121,7 @@ const NavigationBar = () => {
             <img
               src={mainLogo}
               alt='Logo'
-              style={{ height: '60px' }}
+              style={{ height: '70px' }}
             />{' '}
             {/* 로고 크기를 키움 */}
           </Navbar.Brand>

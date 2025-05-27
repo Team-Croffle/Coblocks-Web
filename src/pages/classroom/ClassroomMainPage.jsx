@@ -141,7 +141,7 @@ const ClassroomPage = () => {
   };
 
   return (
-    <Container style={{ marginTop: '50px' }}>
+    <Container style={{ marginTop: '50px', minHeight: 'calc(100vh - 100px)' }}>
       {/* 강의실 제목 박스 */}
       <Card
         className='text-center mb-4'

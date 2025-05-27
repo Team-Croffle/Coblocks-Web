@@ -62,6 +62,7 @@ const AppContent = () => {
         />{' '}
         {/* 팀원소개 라우트 추가 */}
       </Routes>
+      <Footer />
     </>
   );
 };
@@ -71,7 +72,6 @@ const App = () => {
     <>
       <Router>
         <AppContent />
-        <Footer />
       </Router>
     </>
   );
