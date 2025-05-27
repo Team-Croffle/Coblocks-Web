@@ -55,7 +55,6 @@ const ClassroomWorkspace = () => {
       // 여기서는 요청 후 바로 false로 설정합니다.
       setAttemptingExecution(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activityInfo, attemptingExecution, isManager]); // setIsRunTrigger 의존성 제거
 
   const handleExecute = async () => {
@@ -82,6 +81,32 @@ const ClassroomWorkspace = () => {
     // setIsRunTrigger(true)는 여기서 직접 호출하지 않고, ContextProvider에서 처리합니다.
   };
 
+  useEffect(() => {
+    // blocklyWorkspace에 변경 시 이벤트 리스러 추가
+    // 명시적 함수 추가
+    const handleWorkspaceChange = (event) => {
+      if (event.type === Blockly.Events.BLOCK_CREATE || event.type === Blockly.Events.BLOCK_CHANGE) {
+        // 워크스페이스가 변경될 때마다 상태 저장
+        if (Blockly.serialization && Blockly.serialization.workspaces && blocklyWorkspaceRef.current) {
+          const currentState = Blockly.serialization.workspaces.save(blocklyWorkspaceRef.current);
+          setSavedWorkspaceState(currentState);
+        } else {
+          console.warn('Blockly serialization or workspace not available');
+        }
+      }
+    };
+
+    if (blocklyWorkspaceRef.current) {
+      blocklyWorkspaceRef.current.addChangeListener(handleWorkspaceChange);
+    }
+    // cleanup 함수에서 변경 리스너 제거
+    return () => {
+      if (blocklyWorkspaceRef.current) {
+        blocklyWorkspaceRef.current.removeChangeListener(handleWorkspaceChange);
+      }
+    };
+  });
+
   const handleSubmit = () => {
     if (!blocklyWorkspaceRef.current) {
       alert('워크스페이스가 준비되지 않았습니다.');
@@ -101,7 +126,7 @@ const ClassroomWorkspace = () => {
       setEditorShow(false); // 에디터 닫기
 
       socket.emit(socketEvents.SUBMIT_SOLUTION, {
-        submissionContent: code,
+        submissionContent: blocklyCode,
       });
     } catch (error) {
       console.error('코드 제출 중 오류 발생:', error);
@@ -114,6 +139,7 @@ const ClassroomWorkspace = () => {
   }, []);
 
   const handleCodingBtn = () => {
+    setIsRunTrigger(false);
     setEditorShow(true);
   };
 
