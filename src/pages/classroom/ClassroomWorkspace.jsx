@@ -105,7 +105,7 @@ const ClassroomWorkspace = () => {
         blocklyWorkspaceRef.current.removeChangeListener(handleWorkspaceChange);
       }
     };
-  });
+  }, []);
 
   const handleSubmit = () => {
     if (!blocklyWorkspaceRef.current) {
