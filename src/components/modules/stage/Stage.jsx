@@ -149,7 +149,7 @@ const Stage = ({ cellSize, stageData, onStageChange, onStartButtonClicked, activ
             `Stage.jsx: Code execution completed. Successfully executed for characters:`,
             successfulExecutions,
           );
-          rerenderStage();
+          //rerenderStage();
         })
         .catch((error) => {
           console.error('Stage.jsx: Error during code execution:', error);
