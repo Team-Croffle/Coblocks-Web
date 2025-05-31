@@ -10,7 +10,6 @@ import socketEvents from '@/services/socketEvents';
 
 const ClassroomWorkspace = () => {
   const [editorShow, setEditorShow] = useState(false);
-  const [blocklyCode, setBlocklyCode] = useState('');
   const [savedWorkspaceState, setSavedWorkspaceState] = useState(null);
   const [initialStageInfo, setInitialStageInfo] = useState({});
   const blocklyWorkspaceRef = useRef(null);
@@ -107,7 +106,7 @@ const ClassroomWorkspace = () => {
     };
   }, []);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!blocklyWorkspaceRef.current) {
       alert('워크스페이스가 준비되지 않았습니다.');
 
@@ -115,18 +114,18 @@ const ClassroomWorkspace = () => {
     }
 
     try {
-      const code = BlocklyJS.javascriptGenerator.workspaceToCode(blocklyWorkspaceRef.current); // Blockly.Workspace 객체 전달
-      setBlocklyCode(code); // 제출된 코드를 상태로 저장
-
       // 워크스페이스 상태 저장
       if (Blockly.serialization && Blockly.serialization.workspaces && blocklyWorkspaceRef.current) {
         const currentState = Blockly.serialization.workspaces.save(blocklyWorkspaceRef.current);
         setSavedWorkspaceState(currentState);
       }
+
       setEditorShow(false); // 에디터 닫기
 
-      socket.emit(socketEvents.SUBMIT_SOLUTION, {
-        submissionContent: blocklyCode,
+      const code = BlocklyJS.javascriptGenerator.workspaceToCode(blocklyWorkspaceRef.current);
+
+      await socket.emit(socketEvents.SUBMIT_SOLUTION, {
+        submissionContent: code,
       });
     } catch (error) {
       console.error('코드 제출 중 오류 발생:', error);
@@ -256,7 +255,6 @@ const ClassroomWorkspace = () => {
   };
 
   const MainClassroom = () => {
-    console.log('activityInfo:', activityInfo);
     return (
       <Container
         fluid
