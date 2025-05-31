@@ -4,22 +4,23 @@ import NavigationBar from '@layouts/NavigationBar';
 import AuthPage from '@pages/auth/AuthPage';
 import ForgotPasswordPage from '@pages/auth/ForgotPasswordPage';
 import ResetPasswordPage from '@pages/auth/ResetPasswordPage';
-import IntroContainer from '@pages/intro/IntroContainer'; // IntroContainer 컴포넌트 가져오기
+import IntroContainer from '@pages/intro/IntroContainer';
 import ClassroomMainPage from '@pages/classroom/ClassroomMainPage';
 import ClassroomPage from '@pages/classroom/ClassroomPage';
 import ClassroomWorkspace from '@pages/classroom/ClassroomWorkspace';
 import ClassroomLayout from './components/layouts/ClassroomLayout';
+import Footer from '@layouts/Footer';
+import DeveloperInfo from '@pages/developerInfo/DeveloperInfo'; // DeveloperInfo 페이지 import 추가
 
 const AppContent = () => {
-  const location = useLocation(); // Router 내부에서 useLocation 호출
+  const location = useLocation();
   return (
     <>
-      {/* 로그인 페이지와 비밀번호 찾기 페이지가 아닐 경우에만 NavigationBar 렌더링 */}
       {location.pathname !== '/login' && location.pathname !== '/forgot-password' && <NavigationBar />}
       <Routes>
         <Route
           path='/'
-          element={<IntroContainer />} // Home Page를 IntroContainer로 변경
+          element={<IntroContainer />}
         />
         <Route
           path='/login'
@@ -37,7 +38,6 @@ const AppContent = () => {
           path='/classroom-main'
           element={<ClassroomMainPage />}
         />
-
         <Route element={<ClassroomLayout />}>
           <Route
             path='/classroom'
@@ -48,7 +48,6 @@ const AppContent = () => {
             element={<ClassroomWorkspace />}
           />
         </Route>
-
         <Route
           path='/profile'
           element={
@@ -57,7 +56,13 @@ const AppContent = () => {
             </div>
           }
         />
+        <Route
+          path='/developer-info'
+          element={<DeveloperInfo />}
+        />{' '}
+        {/* 팀원소개 라우트 추가 */}
       </Routes>
+      <Footer />
     </>
   );
 };

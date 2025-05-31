@@ -1,45 +1,14 @@
 import React, { useRef, useEffect } from 'react';
+import { characterToolbox } from './toolbox';
 import * as Blockly from 'blockly';
+import 'blockly/javascript';
 import 'blockly/msg/ko';
 
 // 필요한 언어 제너레이터 임포트 (예: JavaScript)
 // 실제 프로젝트에서는 필요한 제너레이터만 선택적으로 임포트합니다.
-// import 'blockly/javascript';
-
-// 기본 툴박스 정의 (간단한 예시) - 이전과 동일
-const defaultToolbox = `
-  <xml>
-    <category name="Logic" colour="210">
-      <block type="controls_if"></block>
-      <block type="logic_compare"></block>
-      <block type="logic_operation"></block>
-      <block type="logic_boolean"></block>
-    </category>
-    <category name="Loops" colour="120">
-      <block type="controls_repeat_ext">
-        <value name="TIMES">
-          <shadow type="math_number">
-            <field name="NUM">10</field>
-          </shadow>
-        </value>
-      </block>
-    </category>
-    <category name="Math" colour="230">
-      <block type="math_number">
-        <field name="NUM">123</field>
-      </block>
-      <block type="math_arithmetic"></block>
-    </category>
-    <category name="Text" colour="330">
-      <block type="text"></block>
-      <block type="text_print"></block>
-    </category>
-  </xml>
-`;
 
 const BlocklyEditor = ({
   readOnly = false, // 읽기 전용 여부 (기본값 false)
-  toolbox = defaultToolbox, // 사용할 툴박스 XML 또는 JSON
   initialBlocks = null, // 초기 블록 상태 (XML 또는 JSON)
   onWorkspaceReady = () => {}, // 워크스페이스 생성 완료 시 호출될 콜백
   blocklyOptions = {}, // Blockly.inject에 추가로 전달할 옵션
@@ -51,7 +20,7 @@ const BlocklyEditor = ({
   useEffect(() => {
     // 워크스페이스 옵션 설정
     const options = {
-      toolbox: toolbox,
+      toolbox: characterToolbox,
       readOnly: readOnly,
       scrollbars: true,
       trashcan: true,
@@ -62,21 +31,11 @@ const BlocklyEditor = ({
     // 기존 워크스페이스가 있다면 상태 저장 후 제거
     let savedState = null;
     if (workspace.current) {
-      if (Blockly.serialization && Blockly.serialization.workspaces) {
-        try {
-          savedState = Blockly.serialization.workspaces.save(workspace.current);
-        } catch (e) {
-          console.error('Failed to save Blockly state:', e);
-          savedState = null;
-        }
-      } else {
-        try {
-          const xml = Blockly.Xml.workspaceToDom(workspace.current);
-          savedState = Blockly.Xml.domToText(xml);
-        } catch (e) {
-          console.error('Failed to save Blockly state (XML):', e);
-          savedState = null;
-        }
+      try {
+        savedState = Blockly.serialization.workspaces.save(workspace.current);
+      } catch (e) {
+        console.error('Failed to save Blockly state:', e);
+        savedState = null;
       }
 
       workspace.current.dispose();
@@ -123,7 +82,7 @@ const BlocklyEditor = ({
       return () => {
         if (workspace.current) {
           workspace.current.dispose();
-          workspace.current = null;
+          //workspace.current = null;
         }
         resizeObserver.disconnect();
       };
@@ -137,7 +96,7 @@ const BlocklyEditor = ({
     // onWorkspaceReady 함수 참조가 변경되어도 이펙트는 재실행되어야 하지만,
     // 실제 앱에서는 onWorkspaceReady를 useCallback으로 감싸 불필요한 재실행을 막아야 함.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [readOnly, toolbox, initialBlocks, onWorkspaceReady]);
+  }, [readOnly, initialBlocks, onWorkspaceReady]);
 
   // Blockly가 주입될 DOM 요소를 렌더링
   return (

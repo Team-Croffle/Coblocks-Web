@@ -1,14 +1,30 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Socket from '@services/socketService'; // Socket 클래스 이름 확인 필요
 import socketEvents from '@services/socketEvents'; // socketEvents 경로가 올바른지 확인해주세요.
 import { ClassroomContext } from './ClassroomContext'; // ClassroomContext 경로 확인 필요
 
+const initialActivityInfoState = {
+  activityPartNumber: null,
+  allParticipantAssignments: [],
+  finalSubmissionsData: {},
+  summitted: {
+    1: false,
+    2: false,
+    3: false,
+    4: false,
+  },
+};
+
 const ClassroomContextProvider = ({ children }) => {
+  const navigate = useNavigate();
   const [socket, setSocket] = useState(null);
   const [chatContext, setChatContext] = useState([]);
   const [participants, setParticipants] = useState([]);
-  const [isManager, setIsManager] = useState(false); // 강의실 관리자 여부
-  // localStorage에서 초기 classroomInfo를 가져와 상태로 관리
+  const [isManager, setIsManager] = useState(false);
+  const [isRunTrigger, setIsRunTrigger] = useState(false);
+  const [questInfo, setQuestInfo] = useState({});
+  const [activityInfo, setActivityInfo] = useState(initialActivityInfoState); // 초기 상태 사용
   const [classroomInfo, setClassroomInfo] = useState(() => {
     const storedInfo = localStorage.getItem('currentClassroomInfo');
     try {
@@ -21,17 +37,28 @@ const ClassroomContextProvider = ({ children }) => {
     }
   });
 
+  const resetActivityStates = useCallback(() => {
+    setActivityInfo(initialActivityInfoState);
+    setIsRunTrigger(false);
+    setQuestInfo({});
+    // 필요하다면 다른 활동 관련 상태도 여기서 초기화
+    if (import.meta.env.VITE_RUNNING_MODE === 'development') {
+      console.log('Activity states have been reset.');
+    }
+  }, []);
+
   const socketClose = useCallback(() => {
     if (socket) {
       socket.closeSocket();
       setSocket(null);
-      // setChatContext([]);
-      // setParticipants([]);
+      // setChatContext([]); // 채팅은 유지할 수도 있음
+      // setParticipants([]); // 참여자 목록도 유지할 수도 있음
+      resetActivityStates(); // 활동 관련 상태 초기화
       if (import.meta.env.VITE_RUNNING_MODE === 'development') {
-        console.log('Socket explicitly closed.');
+        console.log('Socket explicitly closed and activity states reset.');
       }
     }
-  }, [socket]);
+  }, [socket, resetActivityStates]);
 
   useEffect(() => {
     // classroomInfo가 없으면 소켓 관련 로직을 실행하지 않음
@@ -196,23 +223,120 @@ const ClassroomContextProvider = ({ children }) => {
           }
         };
 
+        const handleActivityEndedByServer = (data) => {
+          // 서버에서 활동 종료를 알리는 이벤트 (예: ACTIVITY_TERMINATED)
+          if (import.meta.env.VITE_RUNNING_MODE === 'development') {
+            console.log('Received ACTIVITY_TERMINATED (or similar event):', data);
+          }
+          resetActivityStates();
+          // 필요시 사용자에게 알림 또는 페이지 이동
+          // alert(data.message || '활동이 관리자에 의해 종료되었습니다.');
+          // navigate('/classroom'); // 예시: 로비로 이동
+        };
+
         const handleClassroomDeleted = (data) => {
           if (import.meta.env.VITE_RUNNING_MODE === 'development') {
             console.log('Received CLASSROOM_DELETED:', data);
           }
-          // 현재 참여 중인 강의실이 삭제된 경우에만 처리
           if (data && data.classroomId && classroomInfo && data.classroomId === classroomInfo.classroom_id) {
-            alert(`${data.message ? '강의실이 삭제되었습니다.' : '강의실이 관리자에 의해 종료되었습니다.'}`);
-            socketClose(); // 소켓 연결 종료
-            setClassroomInfo(null); // 현재 강의실 정보 초기화
-            localStorage.removeItem('currentClassroomInfo'); // 로컬 스토리지에서도 정보 제거
-            setChatContext([]); // 채팅 내용 초기화
-            setParticipants([]); // 참여자 목록 초기화
-            // 필요하다면 사용자를 다른 페이지로 리디렉션 (예: 로비, 강의실 목록)
+            alert(`${data.message || '강의실이 관리자에 의해 종료되었습니다.'}`);
+            socketClose(); // 소켓 연결 종료 (내부에서 resetActivityStates 호출됨)
+            setClassroomInfo(null);
+            localStorage.removeItem('currentClassroomInfo');
+            setChatContext([]);
+            setParticipants([]);
+            navigate('/classroom-main'); // 메인 페이지로 이동
           } else {
             if (import.meta.env.VITE_RUNNING_MODE === 'development') {
               console.warn('Received classroomDeleted event for a different or invalid classroom:', data);
             }
+          }
+        };
+
+        const handleReceiveQuestInfo = (data) => {
+          // 퀘스트 정보가 유효한지 확인
+          if (data && data.questInfo) {
+            if (import.meta.env.VITE_RUNNING_MODE === 'development') {
+              console.log('Received PROBLEM_SELECTED_INFO:', data);
+            }
+            setQuestInfo(data.questInfo[0]); // 퀘스트 정보 업데이트
+          } else {
+            if (import.meta.env.VITE_RUNNING_MODE === 'development') {
+              console.warn('Received PROBLEM_SELECTED_INFO without valid questInfo:', questInfo);
+            }
+          }
+        };
+
+        const handleActivityBegin = (data) => {
+          if (import.meta.env.VITE_RUNNING_MODE === 'development') {
+            console.log('Received START_ACTIVITY:', data);
+          }
+          setActivityInfo((prevInfo) => ({
+            ...prevInfo,
+            activityPartNumber: data.myPartNumber, // 활동 파트 번호 업데이트
+            allParticipantAssignments: data.allParticipantAssignments, // 모든 참여자 할당 정보 업데이트
+          }));
+          navigate('/classroom/workspace');
+        };
+
+        const handleActivityEnded = () => {
+          if (import.meta.env.VITE_RUNNING_MODE === 'development') {
+            console.log('Received ACTIVITY_ENDED, resetting activity states.');
+          }
+          resetActivityStates();
+          navigate('/classroom');
+        };
+
+        const handleSubmitSolutionSuccess = (data) => {
+          if (import.meta.env.VITE_RUNNING_MODE === 'development') {
+            console.log('Received SUBMIT_SOLUTION_SUCCESS:', data);
+          }
+          setIsRunTrigger(false); // 제출 성공 후 실행 트리거 초기화
+          setActivityInfo((prevInfo) => ({
+            ...prevInfo,
+            summitted: {
+              ...prevInfo.summitted,
+              [data.partNumber]: true, // 제출한 파트 번호 업데이트
+            },
+          }));
+        };
+
+        const handleSubmissionsData = (data) => {
+          if (import.meta.env.VITE_RUNNING_MODE === 'development') {
+            console.log('Received FINAL_SUBMISSIONS_DATA:', data);
+          }
+          // data는 모든 참여자의 최종 제출 데이터 객체 또는 배열일 수 있습니다.
+          // activityInfo.summitted 상태도 이 데이터를 기반으로 업데이트해야 할 수 있습니다.
+          setActivityInfo((prevInfo) => ({
+            ...prevInfo,
+            finalSubmissionsData: data.finalSubmissions, // 최종 제출 데이터 업데이트
+          }));
+
+          // FINAL_SUBMISSIONS_DATA를 받은 모든 참여자의 isRunTrigger를 true로 설정
+          setIsRunTrigger(true);
+
+          if (import.meta.env.VITE_RUNNING_MODE === 'development') {
+            console.log(
+              'Activity submissions data updated and execution triggered for all participants:',
+              data.finalSubmissions,
+            );
+          }
+        };
+
+        const handleStageReset = () => {
+          if (import.meta.env.VITE_RUNNING_MODE === 'development') {
+            console.log('Received STAGE_RESET, resetting activity states.');
+          }
+          // 모든 참여자의 isRunTrigger를 false로 설정
+          setIsRunTrigger(false);
+          // activityInfo.finalSubmissionsData를 초기화
+          setActivityInfo((prevInfo) => ({
+            ...prevInfo,
+            finalSubmissionsData: null,
+          }));
+
+          if (import.meta.env.VITE_RUNNING_MODE === 'development') {
+            console.log('All participants execution reset.');
           }
         };
 
@@ -224,7 +348,14 @@ const ClassroomContextProvider = ({ children }) => {
         newSocket.on(socketEvents.JOIN_CLASSROOM_SUCCESS, handleJoinClassroomSuccess);
         newSocket.on(socketEvents.USER_JOINED_CLASSROOM, handleUserJoinedClassroom);
         newSocket.on(socketEvents.USER_LEFT_CLASSROOM, handleUserLeftClassroom);
+        newSocket.on(socketEvents.ACTIVITY_ENDED, handleActivityEndedByServer);
         newSocket.on(socketEvents.CLASSROOM_DELETED, handleClassroomDeleted);
+        newSocket.on(socketEvents.PROBLEM_SELECTED_INFO, handleReceiveQuestInfo);
+        newSocket.on(socketEvents.ACTIVITY_BEGIN, handleActivityBegin);
+        newSocket.on(socketEvents.ACTIVITY_ENDED, handleActivityEnded);
+        newSocket.on(socketEvents.SUBMIT_SOLUTION_SUCCESS, handleSubmitSolutionSuccess);
+        newSocket.on(socketEvents.FINAL_SUBMISSIONS_DATA, handleSubmissionsData);
+        newSocket.on(socketEvents.STAGE_RESET, handleStageReset);
 
         // Cleanup 함수: 컴포넌트 언마운트 시 또는 classroomInfo 변경 전에 실행
         return () => {
@@ -239,7 +370,13 @@ const ClassroomContextProvider = ({ children }) => {
           socket.off(socketEvents.JOIN_CLASSROOM_SUCCESS, handleJoinClassroomSuccess);
           socket.off(socketEvents.USER_JOINED_CLASSROOM, handleUserJoinedClassroom);
           socket.off(socketEvents.USER_LEFT_CLASSROOM, handleUserLeftClassroom);
+          socket.off(socketEvents.ACTIVITY_ENDED, handleActivityEndedByServer);
           socket.off(socketEvents.CLASSROOM_DELETED, handleClassroomDeleted);
+          socket.off(socketEvents.PROBLEM_SELECTED_INFO, handleReceiveQuestInfo);
+          socket.off(socketEvents.ACTIVITY_BEGIN, handleActivityBegin);
+          socket.off(socketEvents.SUBMIT_SOLUTION_SUCCESS, handleSubmitSolutionSuccess);
+          socket.off(socketEvents.FINAL_SUBMISSIONS_DATA, handleSubmissionsData);
+          socket.off(socketEvents.STAGE_RESET, handleStageReset);
           socket.closeSocket(); // 소켓 연결 종료
           setSocket(null); // 상태에서 소켓 인스턴스 참조 제거
         };
@@ -250,20 +387,39 @@ const ClassroomContextProvider = ({ children }) => {
         }
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // socket과 socketClose를 의존성 배열에 추가 (useCallback으로 메모이즈 되었으므로 안전)
+  }, []); // 의존성 배열은 이전과 동일하게 유지하거나, resetActivityStates 추가
 
-  // Provider value 최적화: context value 객체가 불필요하게 재생성되는 것을 방지
   const contextValue = useMemo(
     () => ({
       socket,
-      chat: chatContext, // chatContext 대신 chat으로 이름 변경 (일관성)
+      chat: chatContext,
       participants,
       classroomInfo,
       isManager,
-      setClassroomInfo, // 외부에서 classroomInfo를 변경할 수 있도록 함수 제공 (예: 강의실 나가기, 다른 강의실 선택)
-      socketClose, // 소켓을 명시적으로 닫아야 할 때 사용
+      questInfo,
+      activityInfo,
+      isRunTrigger,
+      setIsRunTrigger,
+      setParticipants,
+      setClassroomInfo,
+      socketClose,
+      resetActivityStates, // 컨텍스트를 통해 직접 호출할 수 있도록 추가 (선택 사항)
     }),
-    [socket, chatContext, participants, classroomInfo, isManager, setClassroomInfo, socketClose], // setClassroomInfo도 의존성 배열에 추가
+    [
+      socket,
+      chatContext,
+      participants,
+      classroomInfo,
+      isManager,
+      questInfo,
+      activityInfo,
+      isRunTrigger,
+      setIsRunTrigger, // setIsRunTrigger는 이미 의존성 배열에 있음
+      setParticipants,
+      setClassroomInfo,
+      socketClose,
+      resetActivityStates, // 의존성 배열에 추가
+    ],
   );
 
   return <ClassroomContext.Provider value={contextValue}>{children}</ClassroomContext.Provider>;
