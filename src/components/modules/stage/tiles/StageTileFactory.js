@@ -2,6 +2,7 @@ import { Grass } from './implementations/Grass';
 import { Path } from './implementations/Path';
 import { Wall } from './implementations/Wall';
 import { Water } from './implementations/Water';
+import { Goal } from './implementations/Goal';
 
 export class StageTileFactory {
   constructor() {
@@ -10,12 +11,14 @@ export class StageTileFactory {
       [1, 'path'],
       [2, 'wall'],
       [3, 'water'],
+      [4, 'goal'],
     ]);
     this.tileFactories = new Map([
       ['grass', (x, y) => new Grass(x, y)],
       ['path', (x, y) => new Path(x, y)],
       ['wall', (x, y) => new Wall(x, y)],
       ['water', (x, y) => new Water(x, y)],
+      ['goal', (x, y) => new Goal(x, y)],
     ]);
     this.tiles = [];
   }
@@ -51,7 +54,7 @@ export class StageTileFactory {
 
   static canStepOn(type) {
     const typeName = this.tileTypes.get(type);
-    return typeName === 'grass' || typeName === 'path';
+    return typeName === 'grass' || typeName === 'path' || typeName === 'goal';
   }
 
   loadFromListValues(tilesData, rows, cols) {
