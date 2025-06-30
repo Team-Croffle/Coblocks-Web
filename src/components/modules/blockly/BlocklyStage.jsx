@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, forwardRef, useImperativeHandle } from 'react';
+import React, { useEffect, useState, useRef, forwardRef } from 'react';
 import PropTypes from 'prop-types';
 import Stage from '../stage/Stage';
 
@@ -24,8 +24,7 @@ import Stage from '../stage/Stage';
  *   ]
  * }
  */
-const BlocklyStage = forwardRef(({ initialStage, isRun, activityInfo: parentActivityInfo }, ref) => {
-  console.log('BlocklyStage props: isRun:', isRun, 'parentActivityInfo:', !!parentActivityInfo);
+const BlocklyStage = forwardRef(({ initialStage, isRun, activityInfo: parentActivityInfo }) => {
   const [cellSize, setCellSize] = useState(32);
   const [stageData, setStageData] = useState(initialStage);
   const stageContainerRef = useRef(null);

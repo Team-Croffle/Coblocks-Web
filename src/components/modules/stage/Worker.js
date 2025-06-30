@@ -8,6 +8,7 @@ export class Worker {
     this.character = this.characterFactory.getCharacter(this.characterId);
     this.actionQueue = [];
     this.isRunning = false;
+    this.failed = false;
   }
 
   _logAction(message, isError = false) {
@@ -25,6 +26,7 @@ export class Worker {
 
   // 외부에서 호출될 API 함수들
   async moveForward() {
+    if (this.failed) return;
     if (!this.character) return;
     const { x, y, direction } = this.character.getPositionAndDirection();
     let dx = 0,
@@ -40,12 +42,14 @@ export class Worker {
     const bounds = this.tileFactory.getBounds();
     if (nextX < bounds.minX || nextX > bounds.maxX || nextY < bounds.minY || nextY > bounds.maxY) {
       this._logAction('맵의 가장자리에 도달하여 더 이상 앞으로 갈 수 없습니다.', true);
+      this.failed = true; // 실패 상태로 설정
       return;
     }
 
     const targetTile = this.tileFactory.getTileAt(nextX, nextY);
     if (!targetTile || !targetTile.isStepable()) {
       this._logAction('앞에 길이 없어 앞으로 갈 수 없습니다.', true);
+      this.failed = true; // 실패 상태로 설정
       return;
     }
 
@@ -53,6 +57,7 @@ export class Worker {
     for (const obj of objectsAtNextPos) {
       if (obj && !obj.isPassable(this.character)) {
         this._logAction(`${obj.type}이(가) 길을 막고 있어 앞으로 갈 수 없습니다.`, true);
+        this.failed = true; // 실패 상태로 설정
         return;
       }
     }
@@ -70,6 +75,7 @@ export class Worker {
   }
 
   async turnLeft() {
+    if (this.failed) return;
     if (!this.character) return;
     const dirMap = { up: 'left', left: 'down', down: 'right', right: 'up' };
     const newDirection = dirMap[this.character.getDirection()];
@@ -79,6 +85,7 @@ export class Worker {
   }
 
   async turnRight() {
+    if (this.failed) return;
     if (!this.character) return;
     const dirMap = { up: 'right', right: 'down', down: 'left', left: 'up' };
     const newDirection = dirMap[this.character.getDirection()];
@@ -88,6 +95,7 @@ export class Worker {
   }
 
   async waitAndMove() {
+    if (this.failed) return;
     if (!this.character) return;
     const { x, y, direction } = this.character.getPositionAndDirection();
     let dx = 0,
@@ -103,12 +111,14 @@ export class Worker {
     const bounds = this.tileFactory.getBounds();
     if (nextX < bounds.minX || nextX > bounds.maxX || nextY < bounds.minY || nextY > bounds.maxY) {
       this._logAction('맵의 가장자리에 도달하여 더 이상 앞으로 갈 수 없습니다.', true);
+      this.failed = true; // 실패 상태로 설정
       return;
     }
 
     const targetTile = this.tileFactory.getTileAt(nextX, nextY);
     if (!targetTile || !targetTile.isStepable()) {
       this._logAction('앞에 길이 없어 앞으로 갈 수 없습니다.', true);
+      this.failed = true; // 실패 상태로 설정
       return;
     }
 
@@ -142,6 +152,7 @@ export class Worker {
   }
 
   async interact() {
+    if (this.failed) return;
     if (!this.character) return;
     const { x, y, direction } = this.character.getPositionAndDirection();
     let targetX = x,
@@ -154,6 +165,7 @@ export class Worker {
     const objectsAtTarget = this.objectFactory.getObjectsAt(targetX, targetY);
     if (objectsAtTarget.length === 0) {
       this._logAction('앞에 상호작용할 수 있는 것이 없습니다.', true);
+      this.failed = true; // 실패 상태로 설정
       return;
     }
 
@@ -187,6 +199,7 @@ export class Worker {
   }
 
   async pickUp() {
+    if (this.failed) return;
     if (!this.character) return;
     const { x, y, direction } = this.character.getPositionAndDirection();
     let targetX = x,
@@ -212,16 +225,20 @@ export class Worker {
     }
     if (!pickedUp && objectsAtTarget.length > 0) {
       this._logAction('앞에 있는 것은 주울 수 없습니다.', true);
+      this.failed = true; // 실패 상태로 설정
     } else if (!pickedUp) {
       this._logAction('앞에 주울 아이템이 없습니다.', true);
+      this.failed = true; // 실패 상태로 설정
     }
     await this._delay(200);
   }
 
   async drop() {
+    if (this.failed) return;
     if (!this.character) return;
     if (!this.character.inventory || this.character.inventory.length === 0) {
       this._logAction('내려놓을 아이템이 없습니다.', true);
+      this.failed = true; // 실패 상태로 설정
       return;
     }
     const itemToDrop = this.character.inventory[0]; // 첫 번째 아이템을 내려놓는다고 가정
@@ -237,16 +254,19 @@ export class Worker {
     const bounds = this.tileFactory.getBounds();
     if (targetX < bounds.minX || targetX > bounds.maxX || targetY < bounds.minY || targetY > bounds.maxY) {
       this._logAction('맵 바깥에는 아이템을 내려놓을 수 없습니다.', true);
+      this.failed = true; // 실패 상태로 설정
       return;
     }
 
     const targetTile = this.tileFactory.getTileAt(targetX, targetY);
     if (!targetTile || !targetTile.isStepable()) {
       this._logAction('아이템을 내려놓을 수 없는 장소입니다.', true);
+      this.failed = true; // 실패 상태로 설정
       return;
     }
     if (this.objectFactory.getObjectsAt(targetX, targetY).filter((obj) => !obj.isCollected).length > 0) {
       this._logAction('이미 다른 물건이 있어 아이템을 내려놓을 수 없습니다.', true);
+      this.failed = true; // 실패 상태로 설정
       return;
     }
 
@@ -259,12 +279,14 @@ export class Worker {
           this.onAction('inventoryUpdate', { characterId: this.characterId, inventory: this.character.inventory });
       } else {
         this._logAction('아이템을 내려놓는데 실패했습니다.', true);
+        this.failed = true; // 실패 상태로 설정
       }
     }
     await this._delay(200);
   }
 
   isDoorOpen() {
+    if (this.failed) return;
     if (!this.character) return false;
     const { x, y, direction } = this.character.getPositionAndDirection();
     let targetX = x,
@@ -281,6 +303,14 @@ export class Worker {
       }
     }
     return false; // 문이 없거나 열려 있지 않음
+  }
+
+  isGoalReached() {
+    if (this.failed) return;
+    if (!this.character) return false;
+    const { x, y } = this.character.getPositionAndDirection();
+    const goalTile = this.tileFactory.getTileAt(x, y);
+    return goalTile && goalTile.type === 'goal'; // 목표 타일인지 확인
   }
 
   // 코드 실행 로직
@@ -309,6 +339,11 @@ export class Worker {
     } finally {
       this._delay(200);
       if (this.onAction) this.onAction('runComplete', { characterId: this.characterId });
+      if (this.isGoalReached()) {
+        this._logAction('목표에 도달했습니다! 축하합니다!');
+      }
+      this.isRunning = false;
+      this.failed = false; // 코드 실행 후 실패 상태 초기화
     }
   }
 }

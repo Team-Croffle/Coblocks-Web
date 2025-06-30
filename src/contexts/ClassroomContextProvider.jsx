@@ -279,10 +279,19 @@ const ClassroomContextProvider = ({ children }) => {
           navigate('/classroom/workspace');
         };
 
+        const handleActivityEnded = () => {
+          if (import.meta.env.VITE_RUNNING_MODE === 'development') {
+            console.log('Received ACTIVITY_ENDED, resetting activity states.');
+          }
+          resetActivityStates();
+          navigate('/classroom');
+        };
+
         const handleSubmitSolutionSuccess = (data) => {
           if (import.meta.env.VITE_RUNNING_MODE === 'development') {
             console.log('Received SUBMIT_SOLUTION_SUCCESS:', data);
           }
+          setIsRunTrigger(false); // 제출 성공 후 실행 트리거 초기화
           setActivityInfo((prevInfo) => ({
             ...prevInfo,
             summitted: {
@@ -312,13 +321,23 @@ const ClassroomContextProvider = ({ children }) => {
               data.finalSubmissions,
             );
           }
+        };
 
-          useTimeout(() => {
-            setIsRunTrigger(false);
-            if (import.meta.env.VITE_RUNNING_MODE === 'development') {
-              console.log('isRunTrigger reset to false after 5 seconds');
-            }
-          }, 5000);
+        const handleStageReset = () => {
+          if (import.meta.env.VITE_RUNNING_MODE === 'development') {
+            console.log('Received STAGE_RESET, resetting activity states.');
+          }
+          // 모든 참여자의 isRunTrigger를 false로 설정
+          setIsRunTrigger(false);
+          // activityInfo.finalSubmissionsData를 초기화
+          setActivityInfo((prevInfo) => ({
+            ...prevInfo,
+            finalSubmissionsData: null,
+          }));
+
+          if (import.meta.env.VITE_RUNNING_MODE === 'development') {
+            console.log('All participants execution reset.');
+          }
         };
 
         // 이벤트 리스너 등록
@@ -333,8 +352,10 @@ const ClassroomContextProvider = ({ children }) => {
         newSocket.on(socketEvents.CLASSROOM_DELETED, handleClassroomDeleted);
         newSocket.on(socketEvents.PROBLEM_SELECTED_INFO, handleReceiveQuestInfo);
         newSocket.on(socketEvents.ACTIVITY_BEGIN, handleActivityBegin);
+        newSocket.on(socketEvents.ACTIVITY_ENDED, handleActivityEnded);
         newSocket.on(socketEvents.SUBMIT_SOLUTION_SUCCESS, handleSubmitSolutionSuccess);
         newSocket.on(socketEvents.FINAL_SUBMISSIONS_DATA, handleSubmissionsData);
+        newSocket.on(socketEvents.STAGE_RESET, handleStageReset);
 
         // Cleanup 함수: 컴포넌트 언마운트 시 또는 classroomInfo 변경 전에 실행
         return () => {
@@ -355,6 +376,7 @@ const ClassroomContextProvider = ({ children }) => {
           socket.off(socketEvents.ACTIVITY_BEGIN, handleActivityBegin);
           socket.off(socketEvents.SUBMIT_SOLUTION_SUCCESS, handleSubmitSolutionSuccess);
           socket.off(socketEvents.FINAL_SUBMISSIONS_DATA, handleSubmissionsData);
+          socket.off(socketEvents.STAGE_RESET, handleStageReset);
           socket.closeSocket(); // 소켓 연결 종료
           setSocket(null); // 상태에서 소켓 인스턴스 참조 제거
         };

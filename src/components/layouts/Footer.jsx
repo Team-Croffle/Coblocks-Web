@@ -9,7 +9,6 @@ const Footer = () => {
       style={{
         backgroundColor: '#000',
         color: '#fff',
-        position: 'fixed',
         left: 0,
         bottom: 0,
         width: '100%',
