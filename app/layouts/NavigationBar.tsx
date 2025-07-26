@@ -189,7 +189,7 @@ function NavigationBar(): JSX.Element {
         </button>
         {/* 로고 영역 */}
         <Link
-          to='/intro/carousel'
+          to='/'
           className='flex-shrink-0 text-white rounded px-2 py-1 mr-3'
         >
           <img
@@ -213,7 +213,7 @@ function NavigationBar(): JSX.Element {
           <div className='flex flex-col lg:flex-row lg:ml-auto'>
             {' '}
             <Link
-              to='/intro/carousel'
+              to='/'
               className='text-white rounded px-3 py-2 mr-2 flex items-center border-2 border-white rounded-md hover:bg-white/20 transition-colors duration-200 mb-2 lg:mb-0' // 모바일에서 마진 추가
               onClick={(): void => {
                 setIsNavbarExpanded(false);

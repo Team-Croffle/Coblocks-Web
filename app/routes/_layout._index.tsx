@@ -1,6 +1,14 @@
-//app/routes/intro/carousel
+import Carousel, { type CarouselItem } from '../components/Carousel'; // 캐러셀 컴포넌트 임포트
+import type { MetaFunction } from '@remix-run/node'; // MetaFunction 임포트
 
-import Carousel, { type CarouselItem } from '../components/Carousel';
+// meta 함수: 이 페이지의 메타 태그를 정의합니다.
+// 이 메타 정보는 부모 라우트 (_index.tsx)의 메타 정보와 병합됩니다.
+export const meta: MetaFunction = () => {
+  return [
+    { title: '코블록스 - 핵심 기능' }, // 이 페이지의 구체적인 제목
+    { name: 'description', content: '코블록스 플랫폼의 핵심 기능을 미리 볼 수 있습니다.' }, // 이 페이지의 구체적인 설명
+  ];
+};
 
 // 캐러셀에 표시할 데이터 (예시)
 const DUMMY_SLIDES: CarouselItem[] = [
@@ -26,7 +34,6 @@ const DUMMY_SLIDES: CarouselItem[] = [
   },
 ];
 
-// 이 컴포넌트가 '/intro/carousel' 경로로 접근했을 때 <Outlet />에 렌더링
 export default function IntroCarouselRoute(): JSX.Element {
   const options = { loop: true }; // 캐러셀에 전달할 옵션
 

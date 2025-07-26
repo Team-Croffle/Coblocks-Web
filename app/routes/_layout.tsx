@@ -1,8 +1,11 @@
-//app/routes/intro
-
+import type { MetaFunction } from '@remix-run/node';
 import { Outlet } from '@remix-run/react';
 
-export default function IntroLayout(): JSX.Element {
+export const meta: MetaFunction = () => {
+  return [{ title: 'Coblock' }, { name: 'description', content: 'Welcome to Coblock!' }];
+};
+
+export default function Index(): JSX.Element {
   return (
     <div className='relative h-[1000px] bg-[linear-gradient(-5deg,rgb(202,244,255)_10%,rgb(160,222,255)_50%,rgb(90,178,255)_100%)]'>
       <div className='relative z-20 mx-auto max-w-4xl px-4 py-12'>
