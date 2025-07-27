@@ -5,7 +5,7 @@ import {
   mockParticipants,
   mockChatMessages,
   mockQuests,
-} from '../../assets/dummy/classroomData';
+} from '../assets/dummy/classroomData';
 
 export default function ClassRoom_Page(): JSX.Element {
   const [chatMessage, setChatMessage] = useState<string>('');
