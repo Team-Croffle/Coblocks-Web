@@ -222,7 +222,7 @@ function NavigationBar(): JSX.Element {
               <AiFillHome className='text-xl mr-1' /> 홈
             </Link>
             <Link
-              to='/classroom-main'
+              to='/classroomSetup'
               className='text-white rounded px-3 py-2 mr-2 flex items-center border-2 border-white rounded-md hover:bg-white/20 transition-colors duration-200'
               onClick={(): void => {
                 setIsNavbarExpanded(false);
