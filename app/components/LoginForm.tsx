@@ -15,7 +15,6 @@ function LoginPage() {
   // --- UI 부분 ---
   return (
     // 전체 화면을 차지하고, 로그인 카드를 중앙에 배치하는 역할.
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 p-10">
       <div className="flex w-full max-w-5xl overflow-hidden rounded-lg shadow-lg transition-shadow duration-300 ease-in-out hover:shadow-2xl">
         
         {/* 왼쪽 패널 - 환영 메시지 */}
@@ -109,7 +108,6 @@ function LoginPage() {
           </div>
         </div>
       </div>
-    </div>
   );
 }
 
