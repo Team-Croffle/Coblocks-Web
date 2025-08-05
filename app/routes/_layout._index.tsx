@@ -1,41 +1,63 @@
-import Carousel, { type CarouselItem } from '../components/Carousel'; // 캐러셀 컴포넌트 임포트
-import type { MetaFunction } from '@remix-run/node'; // MetaFunction 임포트
+import Carousel, { type CarouselItem } from '../components/Carousel';
+import { useLoaderData } from '@remix-run/react';
+import { createServerClient } from '@supabase/auth-helpers-remix'; // 패키지 설치했음.
+import { json, type LoaderFunctionArgs, type MetaFunction } from '@remix-run/node';
 
-// meta 함수: 이 페이지의 메타 태그를 정의합니다.
-// 이 메타 정보는 부모 라우트 (_index.tsx)의 메타 정보와 병합됩니다.
-export const meta: MetaFunction = () => {
-  return [
-    { title: '코블록스 - 핵심 기능' }, // 이 페이지의 구체적인 제목
-    { name: 'description', content: '코블록스 플랫폼의 핵심 기능을 미리 볼 수 있습니다.' }, // 이 페이지의 구체적인 설명
-  ];
+// --- DB 연결 및 데이터 로더 ---
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  // request 정보를 사용하는 비동기 함수
+  // test
+  // console.log('--- .env 변수 확인 시작 ---');
+  // console.log('SUPABASE_URL:', process.env.SUPABASE_URL);
+  // console.log('SUPABASE_ANON_KEY:', process.env.SUPABASE_ANON_KEY);
+  // console.log('--- .env 변수 확인 끝 ---');
+
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
+
+  // Supabase 클라이언트 생성
+  const response = new Response();
+  // !는 null이 아님을 보장
+  const supabase = createServerClient(supabaseUrl!, supabaseAnonKey!, {
+    request,
+    response,
+  }); // createServerClient 는 사용자 쿠키 정보를 자동 처리하는 함수.
+
+  // Supabase에서 공지사항 최신순 요청
+  const { data: notices, error } = await supabase
+    .from('notice')
+    .select('notice_id, notice_name, notice_content')
+    .order('notice_time', { ascending: false });
+  // 요청 중 오류 발생시, 빈 데이터 반환
+  if (error) {
+    console.error('Supabase 데이터 조회 에러: ', error);
+    return json({ notices: [] });
+  }
+  // 성공시 페이지로 전달
+  return json({ notices });
 };
 
-// 캐러셀에 표시할 데이터 (예시)
-const DUMMY_SLIDES: CarouselItem[] = [
-  {
-    id: 1,
-    title: '블록코딩',
-    content: '블록으로 코딩하세요.',
-  },
-  {
-    id: 2,
-    title: '협업코딩',
-    content: '사용자들과 함께 코딩하세요.',
-  },
-  {
-    id: 3,
-    title: 'asdf',
-    content: 'asdfgasdfasdf',
-  },
-  {
-    id: 4,
-    title: 'qwer',
-    content: 'qwerqwerqwer',
-  },
-];
+// meta 함수: 이 페이지의 메타 태그를 정의
+export const meta: MetaFunction = () => {
+  return [{ title: '코블록스 - 공지사항' }, { name: 'description', content: '코블록스의 새로운 소식을 확인하세요!' }];
+};
 
 export default function IntroCarouselRoute(): JSX.Element {
-  const options = { loop: true }; // 캐러셀에 전달할 옵션
+  const { notices } = useLoaderData<typeof loader>(); // 로더에서 가져온 공지사항 데이터
+
+  // console.log('컴포넌트가 받은 데이터 (notices):', notices); test
+
+  // 캐러셀에 전달할 아이템 배열 생성
+  const carouselItems: CarouselItem[] =
+    notices?.map((notice) => {
+      return {
+        id: notice.notice_id,
+        title: notice.notice_name,
+        content: notice.notice_content,
+      };
+    }) || [];
+
+  const options = { loop: true }; // 작동 방식 (무한 반복)
 
   return (
     <div
@@ -52,11 +74,10 @@ export default function IntroCarouselRoute(): JSX.Element {
         shadow-xl
       '
     >
-      <h2 className='mb-6 text-3xl font-bold text-gray-800'>✨ 핵심 기능 미리보기 ✨</h2>
       <div className='w-full max-w-xl'>
         {/* Carousel.tsx 컴포넌트 위치 */}
         <Carousel
-          slides={DUMMY_SLIDES}
+          slides={carouselItems}
           options={options}
         />
       </div>
