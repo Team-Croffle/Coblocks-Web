@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
-import { Quest, ClassroomInfo, Participant, ChatMessage } from '../assets/dummy/classroomData';
+import { Quest, ClassroomInfo, Participant } from '../assets/dummy/classroomData';
 import { classroomService } from '../services/classroomService';
 import QuestList from '../components/QuestList';
 import QuestDetail from '../components/QuestDetail';
 import ParticipantList from '../components/ParticipantList';
 import Chat from '../components/Chat';
+import { useLoaderData } from '@remix-run/react';
 
 export default function ClassRoom_Page(): JSX.Element {
+  
+
   const [selectedQuest, setSelectedQuest] = useState<Quest | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -14,7 +17,7 @@ export default function ClassRoom_Page(): JSX.Element {
   // API에서 가져올 데이터 상태들
   const [classroomInfo, setClassroomInfo] = useState<ClassroomInfo | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  
   const [quests, setQuests] = useState<Quest[]>([]);
 
   // 임시 강의실 ID (실제로는 URL 파라미터나 props에서 가져와야 함)
@@ -29,11 +32,9 @@ export default function ClassRoom_Page(): JSX.Element {
         // ✅ 이 부분이 Remix 백엔드 API 호출!
         // /api/classrooms/12345 엔드포인트를 호출
         const data = await classroomService.getAllClassroomData(classroomId);
-
         setClassroomInfo(data.classroomInfo);
         setParticipants(data.participants);
-        setChatMessages(data.messages);
-        setQuests(data.quests);
+        
       } catch (err) {
         setError(err instanceof Error ? err.message : '데이터를 불러오는데 실패했습니다.');
         console.error('Failed to fetch classroom data:', err);
@@ -41,10 +42,12 @@ export default function ClassRoom_Page(): JSX.Element {
         setLoading(false);
       }
     };
+    
 
     fetchData();
   }, [classroomId]);
-
+    const questData = useLoaderData<Quest[]>();
+    setQuests(questData);
   const handleQuestSelect = (quest: Quest): void => {
     setSelectedQuest(quest);
     console.log('퀘스트 선택:', quest);
@@ -150,7 +153,7 @@ export default function ClassRoom_Page(): JSX.Element {
           <ParticipantList participants={participants} />
 
           {/* 채팅 */}
-          <Chat messages={chatMessages} />
+          <Chat  />
         </div>
       </div>
     </div>

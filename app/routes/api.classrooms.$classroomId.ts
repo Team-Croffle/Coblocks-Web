@@ -1,5 +1,6 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { ClassroomInfo, Participants, ChatMessages, Quests } from '~/assets/dummy/classroomData';
+import { ClassroomInfo, Participants } from '~/assets/dummy/classroomData';
+
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const { classroomId } = params;
@@ -12,7 +13,6 @@ export async function loader({ params }: LoaderFunctionArgs) {
   return json({
     classroomInfo: ClassroomInfo,
     participants: Participants,
-    messages: ChatMessages,
-    quests: Quests,
+    
   });
 }

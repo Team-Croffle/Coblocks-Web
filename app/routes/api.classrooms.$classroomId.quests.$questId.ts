@@ -1,5 +1,5 @@
-import { json, type ActionFunctionArgs } from '@remix-run/node';
-import { Quests } from '~/assets/dummy/classroomData';
+import {type ActionFunctionArgs } from '@remix-run/node';
+import  {classroomService} from '~/services/classroomService';
 
 // PUT 요청 - 퀘스트 상태 업데이트
 export async function action({ request, params }: ActionFunctionArgs) {
@@ -21,19 +21,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
   }
 
   // 퀘스트 찾기
-  const quest = Quests.find((q: { id: number }) => {
-    return q.id === parseInt(questId);
-  });
+  const data = await classroomService.getQuests();
 
-  if (!quest) {
-    throw new Response('Quest not found', { status: 404 });
-  }
-
-  // 상태 업데이트 (실제로는 데이터베이스에서 업데이트)
-  const updatedQuest = {
-    ...quest,
-    status: status,
-  };
-
-  return json(updatedQuest);
+  return data;
 }
