@@ -1,8 +1,7 @@
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from '@remix-run/react';
 import type { LinksFunction } from '@remix-run/node';
 import './tailwind.css';
-import Footer from './components/Footer';
-import NavBar from './components/NavigationBar';
+import MainLayout from './layouts/MainLayout';
 
 export const links: LinksFunction = () => {
   return [
@@ -32,9 +31,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        <NavBar />
         {children}
-        <Footer />
         <ScrollRestoration />
         <Scripts />
       </body>
@@ -43,5 +40,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return <Outlet />;
+  return (
+    <MainLayout>
+      <Outlet />
+    </MainLayout>
+  );
 }
