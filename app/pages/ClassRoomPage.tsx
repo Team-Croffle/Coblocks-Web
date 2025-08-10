@@ -1,54 +1,56 @@
-import { useState, useEffect } from 'react';
-import { Quest, ClassroomInfo, Participant } from '../assets/dummy/classroomData';
-import { classroomService } from '../services/classroomService';
+import { useState} from 'react';
+import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import { useLoaderData } from '@remix-run/react';
+import { createSupabaseServerClient } from "~/utils/supabase.server";
 import QuestList from '../components/QuestList';
 import QuestDetail from '../components/QuestDetail';
 import ParticipantList from '../components/ParticipantList';
 import Chat from '../components/Chat';
-import { useLoaderData } from '@remix-run/react';
+
+// 얘는 나중에 데이터 베이스로 가져오기(참여자)
+import { Participants } from '../assets/dummy/classroomData'; 
+
+
+// 퀘스트 데이터 타입 정의
+export interface QuestItem {
+  quest_id: string;
+  quest_description: string;
+  quest_difficulty: number;
+  quest_type: string;
+  solve_status: number;
+}
+
+// Loader 함수 - 서버에서 실행
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const { supabase } = createSupabaseServerClient({ request });
+
+  try {
+    // RPC 함수 호출
+    const { data, error } = await supabase.rpc('get_questlist');
+
+    if (error) {
+      console.error('Supabase RPC 함수 호출 에러: ', error);
+      return json({ questList: [] });
+    }
+
+    return json({ questList: data as QuestItem[] });
+  } catch (error) {
+    console.error('퀘스트 로딩 에러:', error);
+    return json({ questList: [] });
+  }
+};
 
 export default function ClassRoom_Page(): JSX.Element {
+  const { questList } = useLoaderData<typeof loader>();
   
-
-  const [selectedQuest, setSelectedQuest] = useState<Quest | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // API에서 가져올 데이터 상태들
-  const [classroomInfo, setClassroomInfo] = useState<ClassroomInfo | null>(null);
-  const [participants, setParticipants] = useState<Participant[]>([]);
+  // QuestItem 타입을 사용하도록 수정
+  const [selectedQuest, setSelectedQuest] = useState<QuestItem | null>(null);
   
-  const [quests, setQuests] = useState<Quest[]>([]);
-
   // 임시 강의실 ID (실제로는 URL 파라미터나 props에서 가져와야 함)
   const classroomId = '12345';
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        // ✅ 이 부분이 Remix 백엔드 API 호출!
-        // /api/classrooms/12345 엔드포인트를 호출
-        const data = await classroomService.getAllClassroomData(classroomId);
-        setClassroomInfo(data.classroomInfo);
-        setParticipants(data.participants);
-        
-      } catch (err) {
-        setError(err instanceof Error ? err.message : '데이터를 불러오는데 실패했습니다.');
-        console.error('Failed to fetch classroom data:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-
-    fetchData();
-  }, [classroomId]);
-    const questData = useLoaderData<Quest[]>();
-    setQuests(questData);
-  const handleQuestSelect = (quest: Quest): void => {
+  // QuestItem 타입을 사용하도록 수정
+  const handleQuestSelect = (quest: QuestItem): void => {
     setSelectedQuest(quest);
     console.log('퀘스트 선택:', quest);
   };
@@ -57,51 +59,6 @@ export default function ClassRoom_Page(): JSX.Element {
     // 데이터 새로고침
     window.location.reload();
   };
-
-  if (loading) {
-    return (
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          minHeight: '100vh',
-        }}
-      >
-        <div>로딩 중...</div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          minHeight: '100vh',
-          flexDirection: 'column',
-          gap: '20px',
-        }}
-      >
-        <div style={{ color: '#dc3545' }}>오류 발생: {error}</div>
-        <button
-          onClick={handleRefresh}
-          style={{
-            backgroundColor: '#007bff',
-            color: 'white',
-            border: 'none',
-            padding: '10px 20px',
-            borderRadius: '4px',
-            cursor: 'pointer',
-          }}
-        >
-          다시 시도
-        </button>
-      </div>
-    );
-  }
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f8f9fa', padding: '20px' }}>
@@ -117,8 +74,8 @@ export default function ClassRoom_Page(): JSX.Element {
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <h2>📚 {classroomInfo?.name || '강의실'}</h2>
-            <p style={{ margin: 0 }}>강의실 ID: {classroomInfo?.classroom_id || classroomId}</p>
+            <h2>📚 {'강의실'}</h2>
+            <p style={{ margin: 0 }}>강의실 ID: {classroomId}</p>
           </div>
           <button
             onClick={handleRefresh}
@@ -139,7 +96,7 @@ export default function ClassRoom_Page(): JSX.Element {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', gap: '20px' }}>
         {/* 왼쪽: 퀘스트 목록 */}
         <QuestList
-          quests={quests}
+          quests={questList}
           selectedQuest={selectedQuest}
           onQuestSelect={handleQuestSelect}
         />
@@ -150,10 +107,10 @@ export default function ClassRoom_Page(): JSX.Element {
         {/* 오른쪽: 참여자 목록 및 채팅 */}
         <div>
           {/* 참여자 목록 */}
-          <ParticipantList participants={participants} />
+          <ParticipantList participants={Participants} />
 
           {/* 채팅 */}
-          <Chat  />
+          <Chat />
         </div>
       </div>
     </div>

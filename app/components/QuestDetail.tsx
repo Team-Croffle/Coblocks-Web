@@ -1,17 +1,38 @@
-import { Quest } from '../assets/dummy/classroomData';
+import { QuestItem } from '../pages/ClassRoomPage';
 
 interface QuestDetailProps {
-  selectedQuest: Quest | null;
+  selectedQuest: QuestItem | null;
 }
 
 export default function QuestDetail({ selectedQuest }: QuestDetailProps): JSX.Element {
+  // 난이도 텍스트 변환 함수
+  const getDifficultyText = (difficulty: number) => {
+    switch (difficulty) {
+      case 1: return "쉬움";
+      case 2: return "보통";
+      case 3: return "어려움";
+      case 4: return "매우 어려움";
+      default: return "알 수 없음";
+    }
+  };
+
+  // 상태 텍스트 변환 함수
+  const getStatusText = (status: number) => {
+    switch (status) {
+      case 0: return "비공개";
+      case 1: return "공개";
+      case 2: return "해결됨";
+      default: return "알 수 없음";
+    }
+  };
+
   return (
     <div style={{ backgroundColor: 'white', borderRadius: '8px', padding: '20px', border: '1px solid #ddd' }}>
       <h5 style={{ marginBottom: '15px' }}>퀘스트 상세</h5>
       {selectedQuest ? (
         <div>
-          <h4>{selectedQuest.title}</h4>
-          <p style={{ color: '#666' }}>{selectedQuest.description}</p>
+          <h4>{selectedQuest.quest_description}</h4>
+          <p style={{ color: '#666' }}>유형: {selectedQuest.quest_type}</p>
           <div style={{ marginBottom: '15px' }}>
             <strong>난이도:</strong>
             <span
@@ -24,7 +45,7 @@ export default function QuestDetail({ selectedQuest }: QuestDetailProps): JSX.El
                 fontSize: '12px',
               }}
             >
-              {selectedQuest.difficulty}
+              {getDifficultyText(selectedQuest.quest_difficulty)}
             </span>
           </div>
           <div style={{ marginBottom: '15px' }}>
@@ -37,14 +58,20 @@ export default function QuestDetail({ selectedQuest }: QuestDetailProps): JSX.El
                 color: 'white',
                 marginLeft: '8px',
                 backgroundColor:
-                  selectedQuest.status === '완료'
+                  selectedQuest.solve_status === 2
                     ? '#28a745'
-                    : selectedQuest.status === '진행중'
+                    : selectedQuest.solve_status === 1
                       ? '#ffc107'
                       : '#6c757d',
               }}
             >
-              {selectedQuest.status}
+              {getStatusText(selectedQuest.solve_status)}
+            </span>
+          </div>
+          <div style={{ marginBottom: '15px' }}>
+            <strong>퀘스트 ID:</strong>
+            <span style={{ marginLeft: '8px', color: '#666', fontSize: '12px' }}>
+              {selectedQuest.quest_id}
             </span>
           </div>
           <hr />
