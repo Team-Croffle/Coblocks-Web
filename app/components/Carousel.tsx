@@ -6,7 +6,7 @@ import Autoplay from 'embla-carousel-autoplay';
 // --- Type Definitions ---
 
 export type CarouselItem = {
-  id: number;
+  id: string;
   title: string;
   content: string;
 };

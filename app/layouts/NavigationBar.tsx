@@ -3,6 +3,11 @@ import { AiOutlineUser, AiFillHome } from 'react-icons/ai';
 import { FaSchool } from 'react-icons/fa';
 import { Link, useNavigate } from '@remix-run/react';
 import mainLogo from '../assets/images/Logo/minilogo-bg-tp.png';
+import type { User } from '@supabase/supabase-js'; // Supabase User 타입 임포트
+
+interface NavigationBarProps {
+  user: User | null; // 사용자 정보 (로그인 상태에 따라 null일 수 있음)
+}
 
 interface UserMetadata {
   email?: string;
@@ -58,7 +63,7 @@ const supabase = {
   },
 };
 
-function NavigationBar(): JSX.Element {
+function NavigationBar({ user: _propUser }: NavigationBarProps): JSX.Element {
   const navigate = useNavigate();
 
   // 로그인 상태와 사용자 정보를 관리하는 상태 변수
