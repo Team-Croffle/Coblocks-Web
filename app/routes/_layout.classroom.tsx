@@ -1,11 +1,11 @@
-import { useState} from 'react';
+import { useState } from 'react';
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData } from '@remix-run/react';
 import { createSupabaseServerClient } from "~/utils/supabase.server";
-import QuestList from '../components/QuestList';
-import QuestDetail from '../components/QuestDetail';
-import ParticipantList from '../components/ParticipantList';
-import Chat from '../components/Chat';
+import QuestList from '~/components/QuestList';
+import QuestDetail from '~/components/QuestDetail';
+import ParticipantList from '~/components/ParticipantList';
+
 
 // 얘는 나중에 데이터 베이스로 가져오기(참여자)
 import { Participants } from '../assets/dummy/classroomData'; 
@@ -36,7 +36,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     return json({ questList: data as QuestItem[] });
   } catch (error) {
     console.error('퀘스트 로딩 에러:', error);
-    return json({ questList: [] });
+    return json({ questList: [] }); //respone 타입지정
   }
 };
 
@@ -110,9 +110,9 @@ export default function ClassRoom_Page(): JSX.Element {
           <ParticipantList participants={Participants} />
 
           {/* 채팅 */}
-          <Chat />
         </div>
       </div>
     </div>
   );
 }
+
