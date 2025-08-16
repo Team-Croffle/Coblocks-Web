@@ -1,7 +1,7 @@
-import { QuestItem } from '../pages/ClassRoomPage';
+import {Quest} from './QuestList'
 
 interface QuestDetailProps {
-  selectedQuest: QuestItem | null;
+  selectedQuest: Quest | null;
 }
 
 export default function QuestDetail({ selectedQuest }: QuestDetailProps): JSX.Element {
@@ -66,12 +66,6 @@ export default function QuestDetail({ selectedQuest }: QuestDetailProps): JSX.El
               }}
             >
               {getStatusText(selectedQuest.solve_status)}
-            </span>
-          </div>
-          <div style={{ marginBottom: '15px' }}>
-            <strong>퀘스트 ID:</strong>
-            <span style={{ marginLeft: '8px', color: '#666', fontSize: '12px' }}>
-              {selectedQuest.quest_id}
             </span>
           </div>
           <hr />

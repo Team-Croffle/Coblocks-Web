@@ -1,4 +1,10 @@
-import { Quest } from '../assets/dummy/classroomData';
+export interface Quest { 
+  quest_id: string;
+  quest_description: string;
+  quest_difficulty: number;
+  quest_type: string;
+  solve_status: number;
+}
 
 interface QuestListProps {
   quests: Quest[];
