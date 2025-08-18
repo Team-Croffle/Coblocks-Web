@@ -59,7 +59,7 @@ export default function ClassroomPage({ questList }: ClassroomPageProps): JSX.El
           onQuestSelect={handleQuestSelect}
         />
 
-        <QuestDetail selectedQuest={selectedQuest} />
+        <QuestDetail selectedQuest={selectedQuest} roomCode={classroomCode} />
 
         <div>
           <ParticipantList participants={Participants} />
