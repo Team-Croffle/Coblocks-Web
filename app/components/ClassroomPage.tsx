@@ -3,6 +3,7 @@ import QuestList, { Quest } from '~/components/QuestList';
 import QuestDetail from '~/components/QuestDetail';
 import ParticipantList from '~/components/ParticipantList';
 import { Participants } from '../assets/dummy/classroomData';
+import Chat from '~/components/Chat';
 
 interface ClassroomPageProps {
   questList: Quest[]; // 라우트에서 받아온 데이터
@@ -11,19 +12,16 @@ interface ClassroomPageProps {
 export default function ClassroomPage({ questList }: ClassroomPageProps): JSX.Element {
   const [selectedQuest, setSelectedQuest] = useState<Quest | null>(null);
 
-  const classroomId = '12345';
+  const classroomCode = '12345';
+  const userName = '사용자 이름';
 
   const handleQuestSelect = (quest: Quest): void => {
     setSelectedQuest(quest);
     console.log('퀘스트 선택:', quest);
   };
 
-  const handleRefresh = (): void => {
-    window.location.reload();
-  };
-
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f8f9fa', padding: '20px' }}>
+    <div style={{ minHeight: '85vh', backgroundColor: '#f8f9fa', padding: '20px', borderRadius: '8px' }}>
       {/* 헤더 */}
       <div
         style={{
@@ -37,20 +35,19 @@ export default function ClassroomPage({ questList }: ClassroomPageProps): JSX.El
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <h2>📚 강의실</h2>
-            <p style={{ margin: 0 }}>강의실 ID: {classroomId}</p>
+            <p style={{ margin: 0 }}>강의실 코드: {classroomCode}</p>
           </div>
           <button
-            onClick={handleRefresh}
             style={{
-              backgroundColor: 'white',
-              color: '#007bff',
-              border: 'none',
-              padding: '8px 16px',
-              borderRadius: '4px',
-              cursor: 'pointer',
+            backgroundColor: '#dc3545',
+            color: 'white',
+            padding: '10px 20px',
+            borderRadius: '6px',
+            fontSize: '14px',
+            fontWeight: '600',
             }}
           >
-            🔄 새로고침
+            나가기
           </button>
         </div>
       </div>
@@ -66,6 +63,10 @@ export default function ClassroomPage({ questList }: ClassroomPageProps): JSX.El
 
         <div>
           <ParticipantList participants={Participants} />
+          <Chat
+            roomCode={classroomCode}
+            userName={userName}
+          />
         </div>
       </div>
     </div>

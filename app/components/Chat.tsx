@@ -4,16 +4,16 @@ import io, { Socket } from 'socket.io-client';
 // 채팅 메시지의 타입을 정의
 interface MessagePayload {
   message: string;
-  username: string;
+  userName: string;
 }
 
 // 컴포넌트가 받을 Props의 타입을 정의합니다.
 interface ChatProps {
-  code: string;
-  username: string; // 로그인 시 발급받은 JWT 토큰
+  roomCode: string;
+  userName: string; // 로그인 시 발급받은 JWT 토큰
 }
 
-export default function Chat({ code, username }: ChatProps) {
+export default function Chat({ roomCode, userName }: ChatProps) {
   const [chatMessage, setChatMessage] = useState<string>('');
   const [messages, setMessages] = useState<MessagePayload[]>([]);
 
@@ -26,21 +26,21 @@ export default function Chat({ code, username }: ChatProps) {
   useEffect(() => {
     // 4. 컴포넌트가 마운트될 때 한 번만 소켓에 연결합니다.
     // 백엔드 주소와 함께, 인증을 위한 토큰을 'auth' 옵션으로 전달합니다.
-    const socket = io('http://localhost:3001', {
+    const socket = io('http://localhost:3000', {
       auth: {
-          token: "your_jwt_token"
+        token: 'your_jwt_token',
       },
     });
-
+    socket.on('connect', () => {
+      socket.emit('joinRoom', { roomCode, userName }); // ⭐ 이 부분이 누락되어 있었음
+    });
+    
     socketRef.current = socket;
 
-    // 방 참여 요청
-    socket.emit('joinRoom', { code });
-
     // 6. 서버로부터 'message' 이벤트를 받으면, 메시지 목록 상태를 업데이트합니다.
-    socket.on('message', (newMessage: MessagePayload) => {
+    socket.on('chat:message', (data) => {
       setMessages((prevMessages) => {
-        return [...prevMessages, newMessage];
+        return [...prevMessages, data];
       });
     });
 
@@ -54,7 +54,7 @@ export default function Chat({ code, username }: ChatProps) {
     return () => {
       socket.disconnect();
     };
-  }, [code, username]); // code나 username이 바뀔 때만 재연결 (선택적)
+  }, [roomCode, userName]); // code나 userName이 바뀔 때만 재연결 (선택적)
 
   // 8. 메시지가 추가될 때마다 스크롤을 맨 아래로 이동
   useEffect(() => {
@@ -64,9 +64,9 @@ export default function Chat({ code, username }: ChatProps) {
   const handleSendMessage = (): void => {
     if (chatMessage.trim() && socketRef.current) {
       // 9. 완성된 메시지 전송 로직
-      socketRef.current.emit('sendMessage', {
-        code: code,
-        userName: username,
+      socketRef.current.emit('chat:sendMessage', {
+        roomCode: roomCode,
+        userName: userName,
         message: chatMessage,
       });
       setChatMessage('');
@@ -75,9 +75,7 @@ export default function Chat({ code, username }: ChatProps) {
 
   return (
     <div style={{ backgroundColor: 'white', borderRadius: '8px', padding: '15px', border: '1px solid #ddd' }}>
-      <h6 style={{ marginBottom: '10px', marginTop: '0px', fontSize: '20px' }}>
-        💬 채팅
-      </h6>
+      <h6 style={{ marginBottom: '10px', marginTop: '0px', fontSize: '20px' }}>💬 채팅</h6>
 
       {/* 채팅 메시지 목록 */}
       <div
@@ -97,7 +95,8 @@ export default function Chat({ code, username }: ChatProps) {
         {messages.map((msg, index) => {
           return (
             <div key={index}>
-              <strong>{msg.username}: </strong>
+              {/* 입력 시간 추후에 결정 */}
+              <strong>{msg.userName}: </strong>
               <span>{msg.message}</span>
             </div>
           );
