@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import io, { Socket } from 'socket.io-client';
 import QuestList, { Quest } from '~/components/QuestList';
 import QuestDetail from '~/components/QuestDetail';
 import ParticipantList from '~/components/ParticipantList';
@@ -14,10 +15,57 @@ export default function ClassroomPage({ questList }: ClassroomPageProps): JSX.El
 
   const classroomCode = '12345';
   const userName = '사용자 이름';
+  const isManager = true;
+
+  const socketRef = useRef<Socket | null>(null);
+
+  useEffect(() => {
+    // 소켓 연결
+    const socket = io('http://localhost:3000');
+    socketRef.current = socket;
+
+    socket.on('connect', () => {
+      // 방 참여
+      socket.emit('joinRoom', { roomCode: classroomCode, userName });
+    });
+
+    return () => {
+      if (socket.connected) {
+        socket.emit('leaveRoom', { roomCode: classroomCode, userName });
+        socket.disconnect();
+      }
+    };
+  }, [classroomCode, userName]);
 
   const handleQuestSelect = (quest: Quest): void => {
     setSelectedQuest(quest);
     console.log('퀘스트 선택:', quest);
+
+    // ⭐ 퀘스트 선택 시 소켓 이벤트 전송
+    if (isManager && socketRef.current) {
+      socketRef.current.emit('activity:selectProblem', {
+        roomCode: classroomCode,
+        questId: quest.quest_id
+      });
+    }
+  };
+
+  // ⭐ 게임 시작 함수
+  const handleGameStart = (): void => {
+    if (!isManager) {
+      alert('개설자만 게임을 시작할 수 있습니다.');
+      return;
+    }
+
+    if (!selectedQuest) {
+      alert('먼저 퀘스트를 선택해주세요.');
+      return;
+    }
+
+    if (socketRef.current) {
+      socketRef.current.emit('activity:start', {
+      });
+    }
   };
 
   return (
@@ -39,15 +87,15 @@ export default function ClassroomPage({ questList }: ClassroomPageProps): JSX.El
           </div>
           <button
             style={{
-            backgroundColor: '#dc3545',
-            color: 'white',
-            padding: '10px 20px',
-            borderRadius: '6px',
-            fontSize: '14px',
-            fontWeight: '600',
+              backgroundColor: '#dc3545',
+              color: 'white',
+              padding: '10px 20px',
+              borderRadius: '6px',
+              fontSize: '14px',
+              fontWeight: '600',
             }}
           >
-            나가기
+            🚪 나가기
           </button>
         </div>
       </div>
@@ -56,10 +104,16 @@ export default function ClassroomPage({ questList }: ClassroomPageProps): JSX.El
         <QuestList
           quests={questList}
           selectedQuest={selectedQuest}
+          isManager={isManager}
           onQuestSelect={handleQuestSelect}
         />
 
-        <QuestDetail selectedQuest={selectedQuest} roomCode={classroomCode} />
+        <QuestDetail
+          selectedQuest={selectedQuest}
+          roomCode={classroomCode}
+          isManager={isManager}
+          onGameStart={handleGameStart}
+        />
 
         <div>
           <ParticipantList participants={Participants} />

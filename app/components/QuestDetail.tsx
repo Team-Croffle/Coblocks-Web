@@ -1,69 +1,18 @@
-import { useEffect, useRef } from 'react';
-import io, { Socket } from 'socket.io-client';
 import { Quest } from './QuestList';
 
 interface QuestDetailProps {
   selectedQuest: Quest | null;
   roomCode: string;
   isManager?: boolean; 
+  onGameStart: () => void;
 }
 
 export default function QuestDetail({ 
-  selectedQuest, 
-  roomCode, 
-  isManager = false // 기본값 false로 설정
+  selectedQuest,
+  isManager,// 기본값 false로 설정
+  onGameStart
 }: QuestDetailProps): JSX.Element {
   
-  const socketRef = useRef<Socket | null>(null);
-
-  useEffect(() => {
-    // Socket.IO 연결
-    const socket = io('http://localhost:3000');
-    socketRef.current = socket;
-
-    return () => {
-      socket.disconnect();
-    };
-  }, []);
-
-  // ⭐ selectedQuest가 변경될 때마다 소켓으로 데이터 전송
-  useEffect(() => {
-    if (selectedQuest && isManager && socketRef.current) {
-      console.log('📤 activity:selectProblem 이벤트 전송 (퀘스트 선택시):', {
-        roomCode,
-        questId: selectedQuest.quest_id
-      });
-
-      // 퀘스트 선택 시 자동으로 서버에 이벤트 전송
-      socketRef.current.emit('activity:selectProblem', {
-        roomCode: roomCode,
-        questId: selectedQuest.quest_id
-      });
-    }
-  }, [selectedQuest, roomCode, isManager]); // selectedQuest가 변경될 때마다 실행
-
-  // ⭐ 게임 시작 이벤트 전송 함수
-  const handleStartGame = () => {
-    if (!isManager) {
-      alert('개설자만 게임을 시작할 수 있습니다.');
-      return;
-    }
-
-    if (!selectedQuest) {
-      alert('먼저 퀘스트를 선택해주세요.');
-      return;
-    }
-
-    if (socketRef.current) {
-      console.log('📤 activity:start 이벤트 전송:', {
-        roomCode
-      });
-
-      // 게임 시작 이벤트 전송
-      socketRef.current.emit('activity:start', {
-      });
-    }
-  };
 
   // 난이도 텍스트 변환 함수
   const getDifficultyText = (difficulty: number) => {
@@ -132,7 +81,7 @@ export default function QuestDetail({
           
           {/* ⭐ 이 문제로 시작 버튼 - isManager에 따라 활성화/비활성화 */}
           <button
-            onClick={handleStartGame}
+            onClick={onGameStart}
             disabled={!isManager}
             style={{
               backgroundColor: isManager ? '#007bff' : '#6c757d',

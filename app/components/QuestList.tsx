@@ -17,7 +17,7 @@ export default function QuestList({
   quests, 
   selectedQuest, 
   onQuestSelect,
-  isManager = false // ⭐ 기본값 false
+  isManager,// ⭐ 기본값 true
 }: QuestListProps): JSX.Element {
 
   // ⭐ 퀘스트 클릭 핸들러
