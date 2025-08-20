@@ -3,6 +3,7 @@ import NavigationBar from './NavigationBar';
 import Footer from './Footer';
 import { User } from '@supabase/supabase-js';
 
+
 interface MainLayoutProps {
   user: User | null; // 사용자 정보 (로그인 상태에 따라 null일 수 있음)
   children: React.ReactNode;
@@ -16,7 +17,7 @@ export default function MainLayout({ user, children }: MainLayoutProps): JSX.Ele
       {/* 1. <main> 태그에 직접 배경과 relative 스타일을 적용합니다. */}
       <main className='relative flex-grow bg-[linear-gradient(-5deg,rgb(202,244,255)_10%,rgb(160,222,255)_50%,rgb(90,178,255)_100%)]'>
         {/* 2. 페이지 콘텐츠(children)는 main 바로 아래에 위치시킵니다. */}
-        <div className='relative z-10 mx-auto max-w-4xl px-4 py-12'>{children}</div>
+        <div className='relative z-10 mx-auto max-w-5xl px-4 py-12'>{children}</div>
 
         {/* 3. SVG 웨이브는 main을 기준으로 absolute 위치를 잡습니다. */}
         <div className='absolute bottom-0 left-0 hidden w-full overflow-hidden leading-none lg:block'>

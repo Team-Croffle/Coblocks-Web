@@ -2,6 +2,7 @@ import Carousel, { type CarouselItem } from '../components/Carousel';
 import { useLoaderData } from '@remix-run/react';
 import { createSupabaseServerClient } from '../utils/supabase.server';
 import { type LoaderFunctionArgs, type MetaFunction } from '@remix-run/node';
+import type { Notice } from '~/types';
 
 // --- DB 연결 및 데이터 로더 ---
 export const loader = async ({ request }: LoaderFunctionArgs) => {
@@ -28,13 +29,7 @@ export const meta: MetaFunction = () => {
 };
 
 type LoaderData = {
-  notices:
-    | {
-        notice_id: string;
-        notice_name: string;
-        notice_content: string;
-      }[]
-    | null;
+  notices: Notice[];
 };
 
 // UI
