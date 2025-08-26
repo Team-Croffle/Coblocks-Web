@@ -15,7 +15,7 @@ export default function ClassroomPage({ questList }: ClassroomPageProps): JSX.El
   const [selectedQuest, setSelectedQuest] = useState<Quest | null>(null);
 
   const classroomCode = '12345';
-  const userName = '사용자 이름';
+  const userName = '사용자';
   const isManager = true;
 
   const socketRef = useRef<Socket | null>(null);
@@ -42,7 +42,7 @@ export default function ClassroomPage({ questList }: ClassroomPageProps): JSX.El
     setSelectedQuest(quest);
     console.log('퀘스트 선택:', quest);
 
-    // ⭐ 퀘스트 선택 시 소켓 이벤트 전송
+    // 퀘스트 선택 시 소켓 이벤트 전송
     if (isManager && socketRef.current) {
       socketRef.current.emit('activity:selectProblem', {
         roomCode: classroomCode,
@@ -51,7 +51,7 @@ export default function ClassroomPage({ questList }: ClassroomPageProps): JSX.El
     }
   };
 
-  // ⭐ 게임 시작 함수
+  // 게임 시작 함수
   const handleGameStart = (): void => {
     if (!isManager) {
       alert('개설자만 게임을 시작할 수 있습니다.');
@@ -63,10 +63,8 @@ export default function ClassroomPage({ questList }: ClassroomPageProps): JSX.El
       return;
     }
 
-    if (socketRef.current) {
-      socketRef.current.emit('activity:start', {
-        roomCode: classroomCode,
-      });
+    if (socketRef.current) {// 이벤트만 전송 (서버에서 모든 로직 처리)
+      socketRef.current.emit('activity:start');
     }
   };
 
@@ -131,6 +129,7 @@ export default function ClassroomPage({ questList }: ClassroomPageProps): JSX.El
           <Chat
             roomCode={classroomCode}
             userName={userName}
+            socket={socketRef.current} // 소켓 전달
           />
         </div>
       </div>
