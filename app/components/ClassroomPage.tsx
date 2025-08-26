@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import io, { Socket } from 'socket.io-client';
+import { IoSchool, IoExitOutline } from 'react-icons/io5';
 import QuestList, { Quest } from '~/components/QuestList';
 import QuestDetail from '~/components/QuestDetail';
 import ParticipantList from '~/components/ParticipantList';
@@ -7,7 +8,7 @@ import { Participants } from '../assets/dummy/classroomData';
 import Chat from '~/components/Chat';
 
 interface ClassroomPageProps {
-  questList: Quest[]; // 라우트에서 받아온 데이터
+  questList: Quest[];
 }
 
 export default function ClassroomPage({ questList }: ClassroomPageProps): JSX.Element {
@@ -45,7 +46,7 @@ export default function ClassroomPage({ questList }: ClassroomPageProps): JSX.El
     if (isManager && socketRef.current) {
       socketRef.current.emit('activity:selectProblem', {
         roomCode: classroomCode,
-        questId: quest.quest_id
+        questId: quest.quest_id,
       });
     }
   };
@@ -64,6 +65,7 @@ export default function ClassroomPage({ questList }: ClassroomPageProps): JSX.El
 
     if (socketRef.current) {
       socketRef.current.emit('activity:start', {
+        roomCode: classroomCode,
       });
     }
   };
@@ -82,8 +84,11 @@ export default function ClassroomPage({ questList }: ClassroomPageProps): JSX.El
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <h2>📚 강의실</h2>
-            <p style={{ margin: 0 }}>강의실 코드: {classroomCode}</p>
+            <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+              <IoSchool size={28} />
+              강의실
+            </h2>
+            <p style={{ margin: '8px 0 0 0' }}>강의실 코드: {classroomCode}</p>
           </div>
           <button
             style={{
@@ -93,9 +98,15 @@ export default function ClassroomPage({ questList }: ClassroomPageProps): JSX.El
               borderRadius: '6px',
               fontSize: '14px',
               fontWeight: '600',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
             }}
           >
-            🚪 나가기
+            <IoExitOutline size={16} />
+            나가기
           </button>
         </div>
       </div>

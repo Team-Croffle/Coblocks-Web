@@ -1,43 +1,48 @@
+import { IoDocumentText, IoGameController, IoClipboardOutline } from 'react-icons/io5';
 import { Quest } from './QuestList';
 
 interface QuestDetailProps {
   selectedQuest: Quest | null;
   roomCode: string;
-  isManager?: boolean; 
+  isManager?: boolean;
   onGameStart: () => void;
 }
 
-export default function QuestDetail({ 
-  selectedQuest,
-  isManager,// 기본값 false로 설정
-  onGameStart
-}: QuestDetailProps): JSX.Element {
-  
-
-  // 난이도 텍스트 변환 함수
+export default function QuestDetail({ selectedQuest, isManager, onGameStart }: QuestDetailProps): JSX.Element {
   const getDifficultyText = (difficulty: number) => {
     switch (difficulty) {
-      case 1: return "쉬움";
-      case 2: return "보통";
-      case 3: return "어려움";
-      case 4: return "매우 어려움";
-      default: return "알 수 없음";
+      case 1:
+        return '쉬움';
+      case 2:
+        return '보통';
+      case 3:
+        return '어려움';
+      case 4:
+        return '매우 어려움';
+      default:
+        return '알 수 없음';
     }
   };
 
-  // 상태 텍스트 변환 함수
   const getStatusText = (status: number) => {
     switch (status) {
-      case 0: return "비공개";
-      case 1: return "공개";
-      case 2: return "해결됨";
-      default: return "알 수 없음";
+      case 0:
+        return '비공개';
+      case 1:
+        return '공개';
+      case 2:
+        return '해결됨';
+      default:
+        return '알 수 없음';
     }
   };
 
   return (
     <div style={{ backgroundColor: 'white', borderRadius: '8px', padding: '20px', border: '1px solid #ddd' }}>
-      <h5 style={{ marginBottom: '15px' }}>퀘스트 상세</h5>
+      <h5 style={{ marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <IoDocumentText size={20} />
+        퀘스트 상세
+      </h5>
       {selectedQuest ? (
         <div>
           <h4>{selectedQuest.quest_description}</h4>
@@ -78,8 +83,7 @@ export default function QuestDetail({
             </span>
           </div>
           <hr />
-          
-          {/* ⭐ 이 문제로 시작 버튼 - isManager에 따라 활성화/비활성화 */}
+
           <button
             onClick={onGameStart}
             disabled={!isManager}
@@ -96,6 +100,10 @@ export default function QuestDetail({
               transition: 'all 0.2s ease',
               boxShadow: isManager ? '0 2px 4px rgba(0, 123, 255, 0.2)' : '0 2px 4px rgba(108, 117, 125, 0.2)',
               opacity: isManager ? 1 : 0.6,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
             }}
             onMouseEnter={(e) => {
               if (isManager) {
@@ -122,15 +130,43 @@ export default function QuestDetail({
               }
             }}
           >
-            {isManager ? '🎯 이 문제로 시작' : '👑 개설자만 시작 가능'}
+            {isManager ? (
+              <>
+                <IoGameController size={18} />이 문제로 시작
+              </>
+            ) : (
+              <>
+              
+                개설자만 시작 가능
+              </>
+            )}
           </button>
         </div>
       ) : (
-        <div style={{ textAlign: 'center', color: '#666', padding: '50px 0' }}>
-          <div style={{ fontSize: '48px', marginBottom: '15px' }}>📋</div>
-          <p>퀘스트를 선택하세요</p>
+        <div style={{ 
+          textAlign: 'center', 
+          color: '#666', 
+          padding: '50px 0',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          <IoClipboardOutline
+            size={70}
+            style={{ 
+              marginBottom: '15px', 
+              color: '#ccc',
+              display: 'block' // ⭐ block으로 변경
+            }}
+          />
+          <p style={{ margin: '0 0 8px 0' }}>퀘스트를 선택하세요</p>
           {isManager && (
-            <p style={{ fontSize: '14px', color: '#999' }}>
+            <p style={{ 
+              fontSize: '14px', 
+              color: '#999',
+              margin: 0
+            }}>
               선택하면 자동으로 서버에 전송됩니다
             </p>
           )}

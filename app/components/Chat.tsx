@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import io, { Socket } from 'socket.io-client';
+import { IoChatbubbleOutline, IoSend } from 'react-icons/io5';
 
 // 채팅 메시지의 타입을 정의
 interface MessagePayload {
@@ -32,9 +33,9 @@ export default function Chat({ roomCode, userName }: ChatProps) {
       },
     });
     socket.on('connect', () => {
-      socket.emit('joinRoom', { roomCode, userName }); // ⭐ 이 부분이 누락되어 있었음
+      socket.emit('joinRoom', { roomCode, userName });
     });
-    
+
     socketRef.current = socket;
 
     // 6. 서버로부터 'message' 이벤트를 받으면, 메시지 목록 상태를 업데이트합니다.
@@ -75,7 +76,19 @@ export default function Chat({ roomCode, userName }: ChatProps) {
 
   return (
     <div style={{ backgroundColor: 'white', borderRadius: '8px', padding: '15px', border: '1px solid #ddd' }}>
-      <h6 style={{ marginBottom: '10px', marginTop: '0px', fontSize: '20px' }}>💬 채팅</h6>
+      <h6
+        style={{
+          marginBottom: '10px',
+          marginTop: '0px',
+          fontSize: '20px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+        }}
+      >
+        <IoChatbubbleOutline size={20} />
+        채팅
+      </h6>
 
       {/* 채팅 메시지 목록 */}
       <div
@@ -130,9 +143,12 @@ export default function Chat({ roomCode, userName }: ChatProps) {
             padding: '8px 16px',
             borderRadius: '4px',
             cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
           }}
         >
-          ✈️
+          <IoSend size={16} />
         </button>
       </div>
     </div>

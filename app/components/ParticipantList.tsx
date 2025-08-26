@@ -1,3 +1,4 @@
+import { IoRefresh, IoPeopleOutline } from 'react-icons/io5';
 import { Participant } from '../assets/dummy/classroomData';
 
 interface ParticipantListProps {
@@ -15,20 +16,22 @@ export default function ParticipantList({ participants }: ParticipantListProps):
         marginBottom: '15px',
       }}
     >
-      {/* 헤더 부분 - 새로고침 버튼 추가 */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-        <h6 style={{ margin: 0 }}>👥 참여자 ({participants.length}명)</h6>
-        
-        {/* ⭐ 새로고침 버튼 */}
+        <h6 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <IoPeopleOutline size={18} />
+          참여자 ({participants.length}명)
+        </h6>
+
         <button
           style={{
             background: 'none',
             border: 'none',
-            fontSize: '18px',
             cursor: 'pointer',
             padding: '4px',
             borderRadius: '4px',
             transition: 'all 0.2s ease',
+            display: 'flex',
+            alignItems: 'center',
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.backgroundColor = '#f8f9fa';
@@ -39,14 +42,13 @@ export default function ParticipantList({ participants }: ParticipantListProps):
             e.currentTarget.style.transform = 'rotate(0deg)';
           }}
           onClick={() => {
-            // 새로고침 로직
             console.log('참여자 목록 새로고침');
           }}
         >
-          🔄
+          <IoRefresh size={18} />
         </button>
       </div>
-      
+
       <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
         {participants.map((participant) => {
           return (
