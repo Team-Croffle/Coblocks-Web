@@ -1,4 +1,5 @@
 import { Button } from '~/components/ui/button';
+import { Form } from '@remix-run/react';
 
 interface NoticeCreationFormProps {
   onCancel: () => void;
@@ -9,7 +10,10 @@ export default function NoticeCreationForm({ onCancel }: NoticeCreationFormProps
     <div>
       <h3 className='text-xl font-bold text-gray-800 mb-6'>새 공지사항 작성</h3>
 
-      <form className='space-y-4'>
+      <Form
+        method='post'
+        className='space-y-4'
+      >
         <div>
           <label
             htmlFor='notice_name'
@@ -56,7 +60,7 @@ export default function NoticeCreationForm({ onCancel }: NoticeCreationFormProps
             저장하기
           </Button>
         </div>
-      </form>
+      </Form>
     </div>
   );
 }

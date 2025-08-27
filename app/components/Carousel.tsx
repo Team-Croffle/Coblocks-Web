@@ -82,7 +82,7 @@ export default function Carousel({ slides, options }: CarouselProps): JSX.Elemen
   return (
     <div className='relative'>
       <div
-        className='overflow-hidden rounded-lg'
+        className='overflow-hidden rounded-lg h-80'
         ref={emblaRef}
       >
         <div className='flex'>

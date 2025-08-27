@@ -26,11 +26,10 @@ interface AdminDashboardProps {
 }
 
 export default function AdminDashboard({ notices }: AdminDashboardProps) {
-  // 2. activeTab 상태에 'user' 타입을 추가합니다.
   const [activeTab, setActiveTab] = useState<'notice' | 'problem' | 'user'>('notice');
 
   return (
-    <div className='w-full max-w-5xl p-8 mx-auto bg-white shadow-xl rounded-2xl'>
+    <div className='w-full p-8 bg-white shadow-xl rounded-2xl'>
       {/* --- 상단부: 기능 선택 탭 --- */}
       <div className='border-b border-gray-200'>
         <nav
@@ -63,7 +62,6 @@ export default function AdminDashboard({ notices }: AdminDashboardProps) {
           >
             문제 관리
           </button>
-          {/* 3. '회원 관리'를 위한 탭 버튼을 추가합니다. */}
           <button
             type='button'
             onClick={() => {
@@ -84,7 +82,6 @@ export default function AdminDashboard({ notices }: AdminDashboardProps) {
       <div className='mt-8 p-6 border border-gray-200 rounded-lg min-h-[400px]'>
         {activeTab === 'notice' && <NoticeManagementView notices={notices} />}
         {activeTab === 'problem' && <ProblemManagementView />}
-        {/* 4. '회원 관리' 탭이 선택되었을 때 보여줄 화면을 추가합니다. */}
         {activeTab === 'user' && <UserManagementView />}
       </div>
     </div>

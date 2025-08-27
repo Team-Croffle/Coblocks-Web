@@ -65,14 +65,13 @@ export default function IntroCarouselRoute(): JSX.Element {
         shadow-xl
       '
     >
-      <div className='w-full max-w-xl'>
+      <div className='w-full max-w-5xl mx-auto'>
         {/* Carousel.tsx 컴포넌트 위치 */}
         <Carousel
           slides={carouselItems}
           options={options}
         />
       </div>
-      <p className='mt-8 text-gray-600'>위 캐러셀은 `/intro/carousel` 경로에서 렌더링됩니다.</p>
     </div>
   );
 }

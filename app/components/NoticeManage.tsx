@@ -1,6 +1,7 @@
 import type { Notice } from '~/types';
 import NoticeCreate from './NoticeCreate';
 import { useState } from 'react';
+import { Form, Link } from '@remix-run/react';
 
 interface NoticeManagementViewProps {
   notices: Notice[];
@@ -9,7 +10,19 @@ interface NoticeManagementViewProps {
 export default function NoticeManagementView({ notices }: NoticeManagementViewProps) {
   const [viewMode, setViewMode] = useState<'list' | 'create'>('list');
 
-  // 만약 뷰 모드가 'create'이면, 작성 폼을 보여줍니다.
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+  const handleSelect = (id: string) => {
+    setSelectedIds((prevIds) => {
+      return prevIds.includes(id)
+        ? prevIds.filter((prevId) => {
+            return prevId !== id;
+          })
+        : [...prevIds, id];
+    });
+  };
+
+  // 뷰 모드가 'create'이면, 작성 폼 띄움
   if (viewMode === 'create') {
     return (
       <NoticeCreate
@@ -21,7 +34,13 @@ export default function NoticeManagementView({ notices }: NoticeManagementViewPr
   }
 
   return (
-    <div className='w-full'>
+    <Form
+      method='post'
+      className='w-full'
+      onSubmit={() => {
+        console.log('폼 제출됨');
+      }}
+    >
       {/* --- 상단부: 제목과 버튼 --- */}
       <div className='flex items-center justify-between mb-6'>
         <div>
@@ -40,13 +59,26 @@ export default function NoticeManagementView({ notices }: NoticeManagementViewPr
             공지 추가
           </button>
           <button
-            type='button'
+            type='submit'
+            name='_action'
+            value='deleteNotices'
             className='px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500'
           >
             선택 삭제
           </button>
         </div>
       </div>
+
+      {selectedIds.map((id) => {
+        return (
+          <input
+            key={id}
+            type='hidden'
+            name='noticeId'
+            value={id}
+          />
+        );
+      })}
 
       {/* --- 중단부: 공지사항 테이블 --- */}
       <div className='overflow-hidden border rounded-md'>
@@ -56,12 +88,7 @@ export default function NoticeManagementView({ notices }: NoticeManagementViewPr
               <th
                 scope='col'
                 className='w-12 px-6 py-3'
-              >
-                <input
-                  type='checkbox'
-                  className='w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500'
-                />
-              </th>
+              ></th>
               <th
                 scope='col'
                 className='px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase'
@@ -73,6 +100,12 @@ export default function NoticeManagementView({ notices }: NoticeManagementViewPr
                 className='px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase w-48'
               >
                 작성일
+              </th>
+              <th
+                scope='col'
+                className='px-6 py-3 text-xs font-medium tracking-wider text-right text-gray-500 uppercase w-24'
+              >
+                수정
               </th>
             </tr>
           </thead>
@@ -86,6 +119,10 @@ export default function NoticeManagementView({ notices }: NoticeManagementViewPr
                   <td className='px-6 py-4'>
                     <input
                       type='checkbox'
+                      checked={selectedIds.includes(notice.notice_id)}
+                      onChange={() => {
+                        handleSelect(notice.notice_id);
+                      }}
                       className='w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500'
                     />
                   </td>
@@ -95,12 +132,20 @@ export default function NoticeManagementView({ notices }: NoticeManagementViewPr
                   <td className='px-6 py-4 text-sm text-gray-500 whitespace-nowrap'>
                     {new Date(notice.notice_time).toLocaleDateString()}
                   </td>
+                  <td className='px-6 py-4 text-sm text-right'>
+                    <Link
+                      to={`/admin/notices/${notice.notice_id}/edit`}
+                      className='font-medium text-blue-600 hover:underline'
+                    >
+                      수정
+                    </Link>
+                  </td>
                 </tr>
               );
             })}
           </tbody>
         </table>
       </div>
-    </div>
+    </Form>
   );
 }
