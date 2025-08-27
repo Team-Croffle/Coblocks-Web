@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import type { FormEvent, ChangeEvent } from 'react';
-import { supabase } from '~/lib/supabase.mock';
+import type { ChangeEvent } from 'react';
+import { supabase } from '~/utils/supabase.client';
 import { Button } from '~/components/ui/button';
 import {
   Dialog,
@@ -25,26 +25,53 @@ export default function SignupModal() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (formData.password !== formData.confirmPassword) {
-      setError('비밀번호가 일치하지 않습니다.');
-      return;
-    }
-    setLoading(true);
-    setError(null);
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  event.preventDefault();
+
+  // 1. 비밀번호와 비밀번호 확인이 일치하는지 먼저 검사
+  if (formData.password !== formData.confirmPassword) {
+    setError('비밀번호가 일치하지 않습니다.');
+    return; // 일치하지 않으면 함수를 즉시 중단
+  }
+
+  // (선택) 여기에 Zod나 다른 방법으로 비밀번호 복잡도 등을 추가로 검사할 수 있다.
+
+  setLoading(true);
+  setError(null);
+
+  try {
+    // 2. Supabase에 회원가입(signUp) 요청
     const { error } = await supabase.auth.signUp({
       email: formData.email,
       password: formData.password,
-      options: { data: { name: formData.name } },
+      options: {
+        // 'name'과 같은 추가 정보를 저장할 때 사용
+        data: {
+          name: formData.name,
+        },
+      },
     });
+
     if (error) {
-      setError(error.message.includes('User already registered') ? '이미 가입된 이메일입니다.' : '회원가입 중 오류가 발생했습니다.');
-    } else {
-      setSuccess(true);
+      throw error;
     }
+
+    // 3. 성공 시, 성공 메시지를 보여주기 위해 success 상태를 true로 변경
+    setSuccess(true);
+
+  } catch (err: unknown) {
+    let errorMessage = '회원가입 중 오류가 발생했습니다.';
+    if (err instanceof Error) {
+      // 4. 흔한 오류(이미 가입된 이메일)에 대한 친절한 메시지 처리
+      if (err.message.includes('User already registered')) {
+        errorMessage = '이미 가입된 이메일입니다.';
+      }
+    }
+    setError(errorMessage);
+  } finally {
     setLoading(false);
-  };
+  }
+};
 
   return (
     <Dialog onOpenChange={(isOpen) => { if (!isOpen) { setSuccess(false); setError(null); } }}>
