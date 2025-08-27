@@ -11,7 +11,7 @@ interface MainLayoutProps {
 export default function MainLayout({ user, children }: MainLayoutProps): JSX.Element {
   return (
     <div className='flex min-h-screen flex-col'>
-      <NavigationBar user={user} />
+      <NavigationBar />
 
       {/* 1. <main> 태그에 직접 배경과 relative 스타일을 적용합니다. */}
       <main className='relative flex-grow bg-[linear-gradient(-5deg,rgb(202,244,255)_10%,rgb(160,222,255)_50%,rgb(90,178,255)_100%)]'>
