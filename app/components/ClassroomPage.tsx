@@ -13,6 +13,7 @@ interface ClassroomPageProps {
 
 export default function ClassroomPage({ questList }: ClassroomPageProps): JSX.Element {
   const [selectedQuest, setSelectedQuest] = useState<Quest | null>(null);
+  const isConnected = useRef<boolean>(false); // 핵심: 연결 상태 추적
 
   const classroomCode = '12345';
   const userName = '사용자';
@@ -21,13 +22,24 @@ export default function ClassroomPage({ questList }: ClassroomPageProps): JSX.El
   const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
+    // 이미 연결되었으면 중복 연결 방지
+    if (isConnected.current) {
+      return; 
+    }
+    isConnected.current = true;
+    
     // 소켓 연결
     const socket = io('http://localhost:3000');
     socketRef.current = socket;
 
+    // 방 참여
     socket.on('connect', () => {
-      // 방 참여
       socket.emit('joinRoom', { roomCode: classroomCode, userName });
+    });
+
+    socket.on('disconnect', () => {
+      console.log('❌ 연결 끊김');
+      isConnected.current = false; // 연결 해제 시 플래그 리셋
     });
 
     return () => {
@@ -36,7 +48,7 @@ export default function ClassroomPage({ questList }: ClassroomPageProps): JSX.El
         socket.disconnect();
       }
     };
-  }, [classroomCode, userName]);
+  }, []);
 
   const handleQuestSelect = (quest: Quest): void => {
     setSelectedQuest(quest);
