@@ -10,16 +10,17 @@ interface MessagePayload {
 
 // 컴포넌트가 받을 Props의 타입을 정의합니다.
 interface ChatProps {
-  roomCode: string;
+  code: string;
   userName: string; // 로그인 시 발급받은 JWT 토큰
   socket: Socket | null; // 부모로부터 소켓 받기
 }
 
 interface UserJoinedPayload {
   joinUser: string;
+  message?: string;
 }
 
-export default function Chat({ roomCode, userName, socket}: ChatProps) {
+export default function Chat({ code, userName, socket}: ChatProps) {
   const [chatMessage, setChatMessage] = useState<string>('');
   const [messages, setMessages] = useState<MessagePayload[]>([]);
 
@@ -28,27 +29,29 @@ export default function Chat({ roomCode, userName, socket}: ChatProps) {
   useEffect(() => {
   if (!socket) return;
     
-  const handleChatMessage = (message: MessagePayload) => {
-    setMessages((prevMessages) => {
-      return [...prevMessages, message];
-    });
-  };
+    // chat:message 브로드캐스트 수신 처리
+    const handleChatMessage = (data: MessagePayload) => {
+  console.log('📨 받은 채팅 데이터:', data);
+  
+  // 서버에서 받은 메시지 데이터를 그대로 상태에 추가
+  setMessages((prevMessages) => {
+    return [...prevMessages, data];
+  });
+};
 
-  const handleUserJoined = (data: UserJoinedPayload) => {
+    const handleUserJoined = (data: UserJoinedPayload) => {
       console.log(`${data.joinUser}님이 입장했습니다.`);
-      // 입장 메시지를 채팅에 추가 (선택적)
+      
+      // 입장 메시지를 채팅에 추가 (시스템 메시지)
       setMessages((prevMessages) => {
-        return [
-          ...prevMessages,
-          {
-            userName: 'System',
-            message: `[${data.joinUser}]님이 입장했습니다.`
-          }
-        ];
+        const systemMessage: MessagePayload = {
+          userName: 'System',
+          message: data.message || `${data.joinUser}님이 입장했습니다.`,
+        };
+        return [...prevMessages, systemMessage];
       });
     };
 
-  // 이벤트 리스너 등록 (소켓 연결은 부모에서 관리)
   socket.on('chat:message', handleChatMessage);
   socket.on('userJoined', handleUserJoined);
 
@@ -65,16 +68,19 @@ export default function Chat({ roomCode, userName, socket}: ChatProps) {
   }, [messages]);
 
   const handleSendMessage = (): void => {
-    if (chatMessage.trim() && socket) {
-      // 부모에서 받은 소켓으로 메시지 전송
-      socket.emit('chat:sendMessage', {
-        roomCode: roomCode,
-        userName: userName,
-        message: chatMessage,
-      });
-      setChatMessage('');
-    }
-  };
+  if (chatMessage.trim() && socket) {
+    const payload = {
+      code: code,
+      userName: userName,
+      message: chatMessage,
+    };
+
+    // 서버로 메시지 전송
+    socket.emit('chat:sendMessage', payload);
+    
+    setChatMessage('');
+  }
+};
 
   return (
     <div style={{ backgroundColor: 'white', borderRadius: '8px', padding: '15px', border: '1px solid #ddd' }}>
