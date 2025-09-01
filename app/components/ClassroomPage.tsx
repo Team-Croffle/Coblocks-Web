@@ -6,7 +6,8 @@ import QuestDetail from '~/components/QuestDetail';
 import ParticipantList from '~/components/ParticipantList';
 import { Participants } from '../assets/dummy/classroomData';
 import Chat from '~/components/Chat';
-import { supabase } from '~/utils/supabase';
+import { supabase } from '~/utils/supabase.client';
+import { SupabaseAuthToken } from '~/types/supabase';
 
 interface ClassroomPageProps {
   questList: Quest[];
@@ -15,7 +16,7 @@ interface ClassroomPageProps {
 export default function ClassroomPage({ questList }: ClassroomPageProps): JSX.Element {
   const [selectedQuest, setSelectedQuest] = useState<Quest | null>(null);
 
-  const [currentToken, setCurrentToken] = useState<string | null>(null);
+  const [currentToken, setCurrentToken] = useState<SupabaseAuthToken | null>(null);
 
   const isConnected = useRef<boolean>(false); // 핵심: 연결 상태 추적
 
@@ -24,25 +25,22 @@ export default function ClassroomPage({ questList }: ClassroomPageProps): JSX.El
   const isManager = true;
   const socketRef = useRef<Socket | null>(null);
 
-  const supabaseClient = supabase;
-
   // ===================여기서 부터 은석이 꺼==========================
-  const authenticateUser = async (): Promise<string | null> => {
+  const authenticateUser = async (): Promise<any> => {
     try {
-      const { data, error } = await supabaseClient.auth.signInWithPassword({
-        email: '', //본인 이메일
-        password: '', //본인 비밀번호 입력
-      });
+      const tokenStr = localStorage.getItem('supabase');
 
-      if (error) throw error;
-
-      if (data.session?.access_token) {
-        return data.session.access_token;
+      if (!tokenStr) {
+        console.log('[ClassroomPage] authenticateUser: 토큰이 없습니다.');
+        alert('로그인이 필요합니다.');
+        // main 으로 navigate
+        window.location.href = '/';
       } else {
-        throw new Error('세션 정보가 없습니다.');
+        const token: SupabaseAuthToken = JSON.parse(tokenStr);
+        setCurrentToken(token);
       }
     } catch (error) {
-      return null;
+      return;
     }
   };
 
@@ -67,11 +65,12 @@ export default function ClassroomPage({ questList }: ClassroomPageProps): JSX.El
         token: currentToken,
       },
     });
+
     socketRef.current = socket;
 
     socket.on('error', (err) => {
-      console.log('❌ 소켓 오류:', err.message);
-      console.log('❌ 소켓 오류 DATA:', err.data);
+      console.log('[ClassroomPage] 소켓 오류: ', err.message);
+      console.log('[ClassroomPage] 소켓 DATA: ', err.data);
     });
 
     const payload = {
