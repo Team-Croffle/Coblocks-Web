@@ -6,6 +6,7 @@ import QuestDetail from '~/components/QuestDetail';
 import ParticipantList from '~/components/ParticipantList';
 import { Participants } from '../assets/dummy/classroomData';
 import Chat from '~/components/Chat';
+import { supabase } from '~/utils/supabase';
 
 interface ClassroomPageProps {
   questList: Quest[];
@@ -14,29 +15,97 @@ interface ClassroomPageProps {
 export default function ClassroomPage({ questList }: ClassroomPageProps): JSX.Element {
   const [selectedQuest, setSelectedQuest] = useState<Quest | null>(null);
 
-  const classroomCode = '12345';
+  const [currentToken, setCurrentToken] = useState<string | null>(null);
+
+  const isConnected = useRef<boolean>(false); // 핵심: 연결 상태 추적
+
+  const classroomCode = '0001';
   const userName = '사용자';
   const isManager = true;
-
   const socketRef = useRef<Socket | null>(null);
 
+  const supabaseClient = supabase;
+
+  // ===================여기서 부터 은석이 꺼==========================
+  const authenticateUser = async (): Promise<string | null> => {
+    try {
+      const { data, error } = await supabaseClient.auth.signInWithPassword({
+        email: '', //본인 이메일
+        password: '', //본인 비밀번호 입력
+      });
+
+      if (error) throw error;
+
+      if (data.session?.access_token) {
+        return data.session.access_token;
+      } else {
+        throw new Error('세션 정보가 없습니다.');
+      }
+    } catch (error) {
+      return null;
+    }
+  };
+
   useEffect(() => {
+    const handleAuth = async () => {
+      const token = await authenticateUser();
+      setCurrentToken(token);
+    };
+    handleAuth();
+  }, []);
+
+  useEffect(() => {
+    // 이미 연결되었으면 중복 연결 방지
+    if (isConnected.current) {
+      return;
+    }
+    isConnected.current = true;
+
     // 소켓 연결
-    const socket = io('https://coblocks-back.onrender.com/');
+    const socket = io('https://coblocks-back.onrender.com/', {
+      auth: {
+        token: currentToken,
+      },
+    });
     socketRef.current = socket;
 
+    socket.on('error', (err) => {
+      console.log('❌ 소켓 오류:', err.message);
+      console.log('❌ 소켓 오류 DATA:', err.data);
+    });
+
+    const payload = {
+      id: `cls-${Date.now()}`,
+      name: `진짜 마지막 방`,
+      code: classroomCode,
+      managerId: '00aac7ae-3c8a-4b5c-b117-41dcd26163a5',
+      managerName: '정웅교',
+    };
+
+    // 방 참여
     socket.on('connect', () => {
-      // 방 참여
-      socket.emit('joinRoom', { roomCode: classroomCode, userName });
+      socket.emit('classroom:create', payload, (res: { success: boolean; error?: string }) => {
+        if (res.error) {
+          alert(res.error);
+          return;
+        }
+        console.log('✅ 연결 성공:', socket.id, res);
+      });
+    });
+
+    socket.on('disconnect', () => {
+      console.log('❌ 연결 끊김');
+      isConnected.current = false; // 연결 해제 시 플래그 리셋
     });
 
     return () => {
       if (socket.connected) {
-        socket.emit('leaveRoom', { roomCode: classroomCode, userName });
+        socket.emit('leaveRoom', { code: classroomCode, userName });
         socket.disconnect();
       }
     };
-  }, [classroomCode, userName]);
+  }, [currentToken]);
+  // ===================여기까지 은석이 꺼==========================
 
   const handleQuestSelect = (quest: Quest): void => {
     setSelectedQuest(quest);
@@ -45,7 +114,7 @@ export default function ClassroomPage({ questList }: ClassroomPageProps): JSX.El
     // 퀘스트 선택 시 소켓 이벤트 전송
     if (isManager && socketRef.current) {
       socketRef.current.emit('activity:selectProblem', {
-        roomCode: classroomCode,
+        code: classroomCode,
         questId: quest.quest_id,
       });
     }
@@ -66,6 +135,7 @@ export default function ClassroomPage({ questList }: ClassroomPageProps): JSX.El
     if (socketRef.current) {
       // 이벤트만 전송 (서버에서 모든 로직 처리)
       socketRef.current.emit('activity:start');
+      console.log('게임 시작 요청:', selectedQuest);
     }
   };
 
@@ -128,7 +198,7 @@ export default function ClassroomPage({ questList }: ClassroomPageProps): JSX.El
         <div>
           <ParticipantList participants={Participants} />
           <Chat
-            roomCode={classroomCode}
+            code={classroomCode}
             userName={userName}
             socket={socketRef.current} // 소켓 전달
           />
