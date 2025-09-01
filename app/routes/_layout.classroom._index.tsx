@@ -1,9 +1,10 @@
-import { type LoaderFunctionArgs } from "@remix-run/node";
+import { type LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
-import { createSupabaseServerClient } from "~/utils/supabase.server";
-import { Quest }from '~/components/QuestList';
+import { createSupabaseServerClient } from '~/utils/supabase.server';
+import { Quest } from '~/components/QuestList';
 import ClassroomPage from '~/components/ClassroomPage';
-
+import NavigationBar from '~/layouts/NavigationBar';
+import Footer from '~/layouts/Footer';
 
 // Loader 함수 - 서버에서 실행
 export const loader = async ({ request }: LoaderFunctionArgs) => {
@@ -28,7 +29,11 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 // 라우트 컴포넌트 - 데이터를 컴포넌트에 전달
 export default function ClassroomRoute(): JSX.Element {
   const { questList } = useLoaderData<typeof loader>();
-  
+
   // 컴포넌트에 데이터 전달
-  return <ClassroomPage questList={questList} />;
+  return (
+    <>
+      <ClassroomPage questList={questList} />
+    </>
+  );
 }
