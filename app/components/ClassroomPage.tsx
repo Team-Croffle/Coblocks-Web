@@ -104,7 +104,7 @@ export default function ClassroomPage({ questList }: ClassroomPageProps): JSX.El
         socket.disconnect();
       }
     };
-  }, []);
+  }, [currentToken]);
   // ===================여기까지 은석이 꺼==========================
 
   const handleQuestSelect = (quest: Quest): void => {
