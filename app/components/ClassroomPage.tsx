@@ -22,7 +22,7 @@ export default function ClassroomPage({ questList }: ClassroomPageProps): JSX.El
 
   useEffect(() => {
     // 소켓 연결
-    const socket = io('http://localhost:3000');
+    const socket = io('https://coblocks-back.onrender.com/');
     socketRef.current = socket;
 
     socket.on('connect', () => {
@@ -63,7 +63,8 @@ export default function ClassroomPage({ questList }: ClassroomPageProps): JSX.El
       return;
     }
 
-    if (socketRef.current) {// 이벤트만 전송 (서버에서 모든 로직 처리)
+    if (socketRef.current) {
+      // 이벤트만 전송 (서버에서 모든 로직 처리)
       socketRef.current.emit('activity:start');
     }
   };
