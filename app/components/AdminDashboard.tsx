@@ -1,17 +1,9 @@
 import { useState } from 'react';
-import type { Notice } from '~/types';
+import type { Notice, Quest } from '~/types';
 import NoticeManagementView from './NoticeManage';
+import QuestManagementView from './QuestManage';
 
-function ProblemManagementView() {
-  return (
-    <div>
-      <h3 className='text-lg font-semibold text-gray-800'>문제 관리 기능</h3>
-      <p className='mt-2 text-sm text-gray-600'>이곳에 문제 목록, 추가, 수정, 삭제 기능이 들어갑니다.</p>
-    </div>
-  );
-}
-
-// 1. 새로운 기능인 '회원 관리'를 위한 임시 컴포넌트를 추가합니다.
+// 회원 관리 임시 컴포넌트를 추가합니다.
 function UserManagementView() {
   return (
     <div>
@@ -23,9 +15,10 @@ function UserManagementView() {
 
 interface AdminDashboardProps {
   notices: Notice[];
+  quests: Quest[];
 }
 
-export default function AdminDashboard({ notices }: AdminDashboardProps) {
+export default function AdminDashboard({ notices, quests }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState<'notice' | 'problem' | 'user'>('notice');
 
   return (
@@ -81,7 +74,7 @@ export default function AdminDashboard({ notices }: AdminDashboardProps) {
       {/* --- 하단부: 선택된 기능의 화면 --- */}
       <div className='mt-8 p-6 border border-gray-200 rounded-lg min-h-[400px]'>
         {activeTab === 'notice' && <NoticeManagementView notices={notices} />}
-        {activeTab === 'problem' && <ProblemManagementView />}
+        {activeTab === 'problem' && <QuestManagementView quests={quests} />}
         {activeTab === 'user' && <UserManagementView />}
       </div>
     </div>

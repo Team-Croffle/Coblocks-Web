@@ -6,8 +6,9 @@ import { createSupabaseServerClient } from '~/utils/supabase.server';
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { supabase } = createSupabaseServerClient({ request });
   const { data: notices } = await supabase.from('notice').select('*').order('notice_time', { ascending: false });
+  const { data: quests } = await supabase.from('quest').select('*');
 
-  return Response.json({ notices: notices || [] });
+  return Response.json({ notices: notices || [], quests: quests || [] });
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
@@ -52,11 +53,14 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 };
 
 export default function AdminPage() {
-  const { notices } = useLoaderData<typeof loader>();
+  const { notices, quests } = useLoaderData<typeof loader>();
 
   return (
     <div className='w-full p-4 md:p-8'>
-      <AdminDashboard notices={notices} />
+      <AdminDashboard
+        notices={notices}
+        quests={quests}
+      />
     </div>
   );
 }

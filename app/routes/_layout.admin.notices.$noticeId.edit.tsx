@@ -4,7 +4,7 @@ import { createSupabaseServerClient } from '~/utils/supabase.server';
 import { Button } from '~/components/ui/button';
 import type { Notice } from '~/types';
 
-// URL의 ID를 사용해 수정할 공지사항 1개의 데이터 호출
+// ID를 동적 라우트로 선택한 1개의 데이터를 로드
 export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   const { noticeId } = params;
   const { supabase } = createSupabaseServerClient({ request });
@@ -16,7 +16,7 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   return Response.json({ notice });
 };
 
-// action은 수정된 데이터를 DB에 업데이트
+// 수정된 데이터를 DB에 업데이트
 export const action = async ({ params, request }: ActionFunctionArgs) => {
   const { noticeId } = params;
   const { supabase, response } = createSupabaseServerClient({ request });
@@ -29,7 +29,7 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
     .update({ notice_name: noticeName, notice_content: noticeContent })
     .eq('notice_id', noticeId);
 
-  // Remix의 redirect() 대신 표준 Response 객체를 직접 생성하여 리다이렉션을 처리합니다.
+  // Remix의 redirect() 대신 표준 Response 객체를 직접 생성하여 리다이렉션을 처리
   // status: 303은 Form 제출 후 리다이렉트할 때 권장되는 코드
   return new Response(null, {
     status: 303,
