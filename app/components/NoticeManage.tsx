@@ -29,6 +29,7 @@ export default function NoticeManagementView({ notices }: NoticeManagementViewPr
         onCancel={() => {
           setViewMode('list');
         }}
+        header='새 공지사항 작성'
       />
     );
   }

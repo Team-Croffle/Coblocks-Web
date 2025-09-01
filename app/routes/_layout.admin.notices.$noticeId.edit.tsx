@@ -3,6 +3,7 @@ import { Form, useLoaderData, useNavigate } from '@remix-run/react';
 import { createSupabaseServerClient } from '~/utils/supabase.server';
 import { Button } from '~/components/ui/button';
 import type { Notice } from '~/types';
+import NoticeCreationForm from '~/components/NoticeCreate';
 
 // ID를 동적 라우트로 선택한 1개의 데이터를 로드
 export const loader = async ({ params, request }: LoaderFunctionArgs) => {
@@ -51,57 +52,16 @@ export default function EditNoticePage() {
   const navigate = useNavigate();
 
   return (
-    <div className='p-8 bg-white rounded-lg shadow-md max-w-2xl mx-auto'>
-      <h2 className='text-2xl font-bold mb-6'>공지사항 수정</h2>
-      <Form
-        method='post'
-        className='space-y-4'
-      >
-        <div>
-          <label
-            htmlFor='notice_name'
-            className='block text-sm font-medium text-gray-700'
-          >
-            제목
-          </label>
-          <input
-            type='text'
-            name='notice_name'
-            id='notice_name'
-            required
-            defaultValue={notice.notice_name}
-            className='mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm'
-          />
-        </div>
-        <div>
-          <label
-            htmlFor='notice_content'
-            className='block text-sm font-medium text-gray-700'
-          >
-            내용
-          </label>
-          <textarea
-            name='notice_content'
-            id='notice_content'
-            rows={10}
-            required
-            defaultValue={notice.notice_content}
-            className='mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm'
-          />
-        </div>
-        <div className='flex justify-end space-x-2 pt-4'>
-          <Button
-            type='button'
-            variant='outline'
-            onClick={() => {
-              navigate('/admin');
-            }}
-          >
-            취소
-          </Button>
-          <Button type='submit'>수정 완료</Button>
-        </div>
-      </Form>
+    <div className='w-full p-4 md:p-8'>
+      <div className='p-8 bg-white rounded-lg shadow-md'>
+        <NoticeCreationForm
+          header='공지사항 수정'
+          initData={{ title: notice.notice_name, content: notice.notice_content }}
+          onCancel={() => {
+            navigate(-1);
+          }}
+        />
+      </div>
     </div>
   );
 }
