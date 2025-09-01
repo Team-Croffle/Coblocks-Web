@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import type { FormEvent, ChangeEvent } from 'react';
-import { supabase } from '~/lib/supabase.mock';
+import type { ChangeEvent } from 'react';
+import { supabase } from '~/utils/supabase.client';
 import { Button } from '~/components/ui/button';
 import {
   Dialog,
@@ -21,21 +21,29 @@ export default function ForgotPasswordModal() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  event.preventDefault();
   setLoading(true);
   setError(null);
-  const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${window.location.origin}/reset-password`,
-  });
 
-  // error 객체가 존재하는 경우에만 메시지를 설정
-  if (error) {
-    setError(error.message || '알 수 없는 오류가 발생했습니다.');
-  } else {
+  try {
+    // 1. Supabase에 비밀번호 재설정 이메일(resetPasswordForEmail) 요청
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      // 2. 사용자가 이메일 링크를 클릭했을 때 이동할 우리 웹사이트 페이지 주소
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+
+    if (error) {
+      throw error;
+    }
+
     setSuccess(true);
+
+  } catch (err: unknown) {
+    setError('비밀번호 재설정 이메일 전송에 실패했습니다.');
+  } finally {
+    setLoading(false);
   }
-  setLoading(false);
 };
   
   return (
