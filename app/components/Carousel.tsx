@@ -82,7 +82,7 @@ export default function Carousel({ slides, options }: CarouselProps): JSX.Elemen
   return (
     <div className='relative'>
       <div
-        className='overflow-hidden rounded-lg'
+        className='overflow-hidden rounded-lg h-80'
         ref={emblaRef}
       >
         <div className='flex'>
@@ -92,7 +92,7 @@ export default function Carousel({ slides, options }: CarouselProps): JSX.Elemen
                 className='relative min-w-0 flex-[0_0_100%]'
                 key={item.id}
               >
-                <div className='flex h-full flex-col items-center justify-center p-8 text-center text-white'>
+                <div className='flex h-full flex-col items-center justify-center p-8 text-center text-black'>
                   <h3 className='text-xl font-bold'>{item.title}</h3>
                   <p className='mt-2'>{item.content}</p>
                 </div>
