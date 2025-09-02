@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Form, Link } from '@remix-run/react';
 import type { Quest } from '~/types';
-//import QuestCreate from '~/components/QuestCreate';
+import QuestCreate from './QuestCreate';
 
 interface QuestManagementViewProps {
   quests: Quest[];
@@ -9,6 +9,7 @@ interface QuestManagementViewProps {
 
 export default function QuestManagementView({ quests }: QuestManagementViewProps) {
   const [viewMode, setViewMode] = useState('list');
+
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const handleSelect = (id: string) => {
@@ -29,6 +30,7 @@ export default function QuestManagementView({ quests }: QuestManagementViewProps
         onCancel={() => {
           setViewMode('list');
         }}
+        header='새 퀘스트 작성'
       />
     );
   }
@@ -125,7 +127,7 @@ export default function QuestManagementView({ quests }: QuestManagementViewProps
                   </td>
                   <td className='px-6 py-4 text-sm text-right'>
                     <Link
-                      to={`/admin/quests/${quest.quest_id}/edit`}
+                      to={`/admin/quest/${quest.quest_id}/edit`}
                       className='font-medium text-blue-600 hover:underline'
                     >
                       수정

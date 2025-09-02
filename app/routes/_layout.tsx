@@ -1,5 +1,5 @@
 import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
-import { Outlet, useLoaderData } from '@remix-run/react';
+import { Outlet } from '@remix-run/react';
 import { createSupabaseServerClient } from '~/utils/supabase.server';
 import Footer from '~/layouts/Footer';
 import NavigationBar from '~/layouts/NavigationBar';
@@ -15,12 +15,12 @@ export const meta: MetaFunction = () => {
 };
 
 export default function Layout(): JSX.Element {
-  const { user } = useLoaderData<typeof loader>();
-
   return (
     <div className='flex min-h-screen flex-col'>
       <NavigationBar />
-      <Outlet />
+      <main className='flex-grow'>
+        <Outlet />
+      </main>
       <Footer />
     </div>
   );

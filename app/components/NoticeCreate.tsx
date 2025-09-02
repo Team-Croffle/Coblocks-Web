@@ -11,6 +11,7 @@ interface NoticeCreationFormProps {
 }
 
 export default function NoticeCreationForm({ onCancel, header, initData }: NoticeCreationFormProps) {
+
   return (
     <div>
       <h3 className='text-xl font-bold text-gray-800 mb-6'>{header}</h3>
@@ -64,7 +65,7 @@ export default function NoticeCreationForm({ onCancel, header, initData }: Notic
             name='_action'
             value='createNotice'
           >
-            저장하기
+            저장
           </Button>
         </div>
       </Form>

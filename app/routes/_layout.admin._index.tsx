@@ -1,4 +1,4 @@
-import { type LoaderFunctionArgs, type ActionFunctionArgs } from '@remix-run/node';
+import { redirect, type LoaderFunctionArgs, type ActionFunctionArgs } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
 import AdminDashboard from '~/components/AdminDashboard';
 import { createSupabaseServerClient } from '~/utils/supabase.server';
@@ -12,7 +12,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
-  const { supabase } = createSupabaseServerClient({ request });
+  const { supabase, response } = createSupabaseServerClient({ request });
   const formData = await request.formData();
   const actionType = formData.get('_action');
 
@@ -33,6 +33,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       console.error('공지사항 생성 오류:', error);
       return Response.json({ error: error.message }, { status: 500 });
     }
+    return redirect('/admin?tab=notice', { headers: response.headers });
   }
 
   // 공지사항 삭제
@@ -49,6 +50,60 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       return Response.json({ error: error.message }, { status: 500 });
     }
   }
+
+  if (actionType === 'createQuest') {
+    const questData = {
+      quest_description: formData.get('quest_description') as string,
+      quest_type: formData.get('quest_type') as string,
+      quest_difficulty: Number(formData.get('quest_difficulty')),
+    };
+    const questDetailData = {
+      quest_question: formData.get('quest_question') as string,
+      answer: formData.get('answer') as string,
+      hint: formData.get('hint') as string,
+      default_stage: JSON.parse((formData.get('default_stage') as string) || '{}'),
+      quest_context: JSON.parse(String(formData.get('quest_context') || '{}')),
+    };
+
+    // quest 테이블에 데이터를 삽입, 생성된 데이터를 반환
+    const { data: newQuest, error: questError } = await supabase
+      .from('quest')
+      .insert({ ...questData, solve_status: 1 })
+      .select()
+      .single();
+
+    if (questError || !newQuest) {
+      console.error('Quest creation error:', questError);
+      return Response.json({ error: '퀘스트 생성 중 1단계 오류' }, { status: 500 });
+    }
+
+    // 성공적으로 생성된 questID를 사용해서 quest_detail에 데이터를 삽입
+    const { error: detailError } = await supabase.from('quest_detail').insert({
+      ...questDetailData,
+      quest_id: newQuest.quest_id,
+    });
+
+    if (detailError) {
+      console.error('Quest detail creation error:', detailError);
+      // 참고: 이 경우 quest는 생성되었지만 detail은 실패한 상태
+      return Response.json({ error: '퀘스트 생성 중 2단계 오류' }, { status: 500 });
+    }
+
+    return redirect('/admin?tab=problem', { headers: response.headers });
+  }
+
+  if (actionType === 'deleteQuests') {
+    const questIds = formData.getAll('questId') as string[];
+    if (questIds.length === 0) {
+      return Response.json({ error: '삭제할 퀘스트를 선택하세요.' }, { status: 400 });
+    }
+    const { error } = await supabase.from('quest').delete().in('quest_id', questIds);
+    if (error) {
+      return Response.json({ error: '퀘스트 삭제 오류' }, { status: 500 });
+    }
+    return redirect('/admin?tab=problem', { headers: response.headers });
+  }
+
   return null;
 };
 
