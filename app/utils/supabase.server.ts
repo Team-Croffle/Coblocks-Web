@@ -9,3 +9,9 @@ export const createSupabaseServerClient = ({ request }: { request: Request }) =>
 
   return { supabase, response };
 };
+
+  export const getUserId = async (request: Request): Promise<string | null> => {
+  const { supabase } = createSupabaseServerClient({ request });
+  const { data: { session } } = await supabase.auth.getSession();
+  return session?.user?.id ?? null;
+};
