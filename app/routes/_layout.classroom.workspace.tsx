@@ -15,6 +15,7 @@ import { WorkspaceWrapper } from '~/components/WorkspaceWrapper';
 import { StageDataSet } from '~/types/stages';
 import ParticipantList from '~/components/ParticipantList';
 import { Participant } from '~/assets/dummy/classroomData';
+import { useSocket } from '~/context/socket-context';
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { supabase } = createSupabaseServerClient({ request });
@@ -185,6 +186,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 export default function WorkspaceRoute(): JSX.Element {
   // mock data
   const stageDataSet = useLoaderData<typeof loader>();
+  const socket = useSocket();
 
   // mock data
   const participants: Participant[] = [];
