@@ -1,11 +1,16 @@
 import { IoRefresh, IoPeopleOutline } from 'react-icons/io5';
-import { Participant } from '../assets/dummy/classroomData';
+
+// 소켓에서 받는 데이터 구조에 맞춘 타입
+interface Participant {
+  userName: string;
+  isManager: boolean;
+}
 
 interface ParticipantListProps {
   participants: Participant[];
 }
 
-export default function ParticipantList({ participants }: ParticipantListProps): JSX.Element {
+export default function ParticipantList({ participants}: ParticipantListProps): JSX.Element {
   return (
     <div
       style={{
@@ -50,14 +55,26 @@ export default function ParticipantList({ participants }: ParticipantListProps):
       </div>
 
       <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
-        {participants.map((participant) => {
+        {participants.map((participant, index) => {
+          // userName과 managerName 비교로 관리자 판단
+          const isManager = participant.isManager;
+
           return (
             <div
-              key={participant.userId}
-              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '5px 0' }}
+              key={`${participant.userName}-${index}`} // userName + index로 고유 key 생성
+              style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center', 
+                padding: '8px 0',
+                borderBottom: index === participants.length - 1 ? 'none' : '1px solid #f0f0f0'
+              }}
             >
-              <span>{participant.username}</span>
-              {participant.isManager && (
+              <span style={{ fontWeight: isManager ? 'bold' : 'normal' }}>
+                {participant.userName}
+                {isManager} 
+              </span>
+              {isManager && (
                 <span
                   style={{
                     backgroundColor: '#ffc107',
@@ -65,6 +82,7 @@ export default function ParticipantList({ participants }: ParticipantListProps):
                     padding: '2px 6px',
                     borderRadius: '4px',
                     fontSize: '11px',
+                    fontWeight: 'bold',
                   }}
                 >
                   관리자
@@ -73,6 +91,18 @@ export default function ParticipantList({ participants }: ParticipantListProps):
             </div>
           );
         })}
+        
+        {/* 참가자가 없을 때 표시 */}
+        {participants.length === 0 && (
+          <div style={{ 
+            textAlign: 'center', 
+            color: '#666', 
+            fontStyle: 'italic',
+            padding: '20px 0' 
+          }}>
+            참가자가 없습니다.
+          </div>
+        )}
       </div>
     </div>
   );
