@@ -12,4 +12,15 @@ export type Quest = {
   quest_difficulty: number;
   quest_type: string;
   solve_status: number;
+  quest_detail: QuestDetail[];
+};
+
+export type QuestDetail = {
+  quest_detail_id: string;
+  quest_id: string;
+  quest_question: string | null;
+  answer: string | null;
+  hint: string | null;
+  default_stage: any | null;
+  quest_context: any | null;
 };

@@ -70,7 +70,7 @@ export default function IntroCarouselRoute(): JSX.Element {
         shadow-xl
       '
     >
-      <div className='w-full max-w-xl'>
+      <div className='max-w-5xl mx-auto'>
         {/* Carousel.tsx 컴포넌트 위치 */}
         <Carousel
           slides={carouselItems}

@@ -3,23 +3,13 @@ import type { Notice, Quest } from '~/types';
 import NoticeManagementView from './NoticeManage';
 import QuestManagementView from './QuestManage';
 
-// 회원 관리 임시 컴포넌트를 추가합니다.
-function UserManagementView() {
-  return (
-    <div>
-      <h3 className='text-lg font-semibold text-gray-800'>회원 관리 기능</h3>
-      <p className='mt-2 text-sm text-gray-600'>이곳에 사용자 목록, 권한 변경, 회원 정보 수정 기능 등이 들어갑니다.</p>
-    </div>
-  );
-}
-
 interface AdminDashboardProps {
   notices: Notice[];
   quests: Quest[];
 }
 
 export default function AdminDashboard({ notices, quests }: AdminDashboardProps) {
-  const [activeTab, setActiveTab] = useState<'notice' | 'problem' | 'user'>('notice');
+  const [activeTab, setActiveTab] = useState<'notice' | 'problem'>('notice');
 
   return (
     <div className='w-full p-8 bg-white shadow-xl rounded-2xl'>
@@ -55,19 +45,6 @@ export default function AdminDashboard({ notices, quests }: AdminDashboardProps)
           >
             문제 관리
           </button>
-          <button
-            type='button'
-            onClick={() => {
-              setActiveTab('user');
-            }}
-            className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-lg transition-colors duration-200 focus:outline-none ${
-              activeTab === 'user'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
-          >
-            회원 관리
-          </button>
         </nav>
       </div>
 
@@ -75,7 +52,6 @@ export default function AdminDashboard({ notices, quests }: AdminDashboardProps)
       <div className='mt-8 p-6 border border-gray-200 rounded-lg min-h-[400px]'>
         {activeTab === 'notice' && <NoticeManagementView notices={notices} />}
         {activeTab === 'problem' && <QuestManagementView quests={quests} />}
-        {activeTab === 'user' && <UserManagementView />}
       </div>
     </div>
   );

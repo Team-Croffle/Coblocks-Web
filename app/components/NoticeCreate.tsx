@@ -3,12 +3,18 @@ import { Form } from '@remix-run/react';
 
 interface NoticeCreationFormProps {
   onCancel: () => void;
+  header: string;
+  initData?: {
+    title: string;
+    content: string;
+  };
 }
 
-export default function NoticeCreationForm({ onCancel }: NoticeCreationFormProps) {
+export default function NoticeCreationForm({ onCancel, header, initData }: NoticeCreationFormProps) {
+
   return (
     <div>
-      <h3 className='text-xl font-bold text-gray-800 mb-6'>새 공지사항 작성</h3>
+      <h3 className='text-xl font-bold text-gray-800 mb-6'>{header}</h3>
 
       <Form
         method='post'
@@ -26,6 +32,7 @@ export default function NoticeCreationForm({ onCancel }: NoticeCreationFormProps
             name='notice_name'
             id='notice_name'
             required
+            defaultValue={initData?.title || ''}
             className='mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500'
           />
         </div>
@@ -41,6 +48,7 @@ export default function NoticeCreationForm({ onCancel }: NoticeCreationFormProps
             id='notice_content'
             rows={10}
             required
+            defaultValue={initData?.content || ''}
             className='mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500'
           />
         </div>
@@ -57,7 +65,7 @@ export default function NoticeCreationForm({ onCancel }: NoticeCreationFormProps
             name='_action'
             value='createNotice'
           >
-            저장하기
+            저장
           </Button>
         </div>
       </Form>
