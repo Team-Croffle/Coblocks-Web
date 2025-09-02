@@ -1,4 +1,5 @@
 import { CoblocksStage, StageRef } from '@croffledev/coblocks-stage-react';
+import { useNavigate } from '@remix-run/react';
 import { useEffect, useRef, useState } from 'react';
 import { StageDataSet } from '~/types/stages';
 
@@ -10,6 +11,7 @@ export const WorkspaceWrapper = ({ stageDataSet }: WorkspaceWrapperProps): JSX.E
   const { config, entityDefinitions, stageData, codes } = stageDataSet;
 
   const stageRef = useRef<StageRef>(null);
+  const nav = useNavigate();
 
   const [isMounted, setIsMounted] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
@@ -34,6 +36,10 @@ export const WorkspaceWrapper = ({ stageDataSet }: WorkspaceWrapperProps): JSX.E
     if (stageRef.current) {
       stageRef.current.reset();
     }
+  }
+
+  function handleGoToEditor() {
+    nav('/classroom/workspace/blockly');
   }
 
   const stageWidth = config.size.width * (config.tileSize || 32) + 5;
@@ -76,6 +82,12 @@ export const WorkspaceWrapper = ({ stageDataSet }: WorkspaceWrapperProps): JSX.E
           onClick={handleReset}
         >
           초기화
+        </button>
+        <button
+          className='bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 w-40 rounded-2xl'
+          onClick={handleGoToEditor}
+        >
+          문제풀러가기
         </button>
       </div>
     </>

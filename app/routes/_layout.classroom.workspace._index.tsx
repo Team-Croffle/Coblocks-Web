@@ -34,7 +34,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const stageConfig: StageConfig = {
     size: { width: 8, height: 6 },
     tileSize: 50,
-    showGrid: true,
+    showGrid: false,
     backgroundColor: '#ffffff',
   };
 
@@ -186,18 +186,18 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 export default function WorkspaceRoute(): JSX.Element {
   // mock data
   const stageDataSet = useLoaderData<typeof loader>();
-  const socket = useSocket();
+  // const socket = useSocket();
 
   // mock data
   const participants: Participant[] = [];
 
   // 컴포넌트에 데이터 전달
   return (
-    <div className='grid grid-cols-7 w-full p-4 gap-4 grow'>
-      <div className='flex col-span-5 flex-col border p-2 border-gray-500 rounded-2xl shadow-lg'>
+    <div className='grid grid-cols-7 w-full p-4 grow'>
+      <div className='flex col-span-5 flex-col border p-2 border-gray-500 rounded-2xl shadow-lg mr-2'>
         <WorkspaceWrapper stageDataSet={stageDataSet} />
       </div>
-      <div className='col-span-2'>
+      <div className='col-span-2 ml-2'>
         <div className='flex flex-col w-full border border-gray-300 p-2 rounded-lg shadow-md gap-2'>
           <div className='text-2xl font-bold border border-green-400 rounded-lg py-2 px-4'>
             <p className='truncate'>제목제목제목제목제목제목제목제목제목제목제목</p>
