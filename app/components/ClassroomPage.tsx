@@ -36,50 +36,43 @@ interface Participant {
   isManager: boolean;
 }
 
+interface Classroom {
+  classroom_name: string;
+  classroom_code: string;
+  classroom_id: string;
+  manager_users_id: string;
+  isManager: boolean;
+}
+
 export default function ClassroomPage({ questList }: ClassroomPageProps): JSX.Element {
   const [selectedQuest, setSelectedQuest] = useState<Quest | null>(null);
-  const [currentToken, setCurrentToken] = useState<string | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
-
-  // 로컬스토리지에서 받아올 상태들
-  const [classroomName, setClassroomName] = useState<string>('');
-  const [classroomCode, setClassroomCode] = useState<string>('');
-  const [classroomId, setClassroomId] = useState<string>('');
-  const [managerUserId, setManagerUserId] = useState<string>('');
-  const [isManager, setIsManager] = useState<boolean>(false);
-
+  const [classroom, setClassroom] = useState<Classroom | null>(null);
   const [userName, setUserName] = useState<string>('');
+  const [currentToken, setCurrentToken] = useState<string | null>(null);
+  const [isInitialized, setIsInitialized] = useState<boolean>(false);
 
   const isConnected = useRef<boolean>(false);
   const socketRef = useRef<Socket | null>(null);
 
-  // 로컬스토리지에서 사용자 정보 가져오는 함수 수정
-  const loadUserInfoFromLocalStorage = (): void => {
+  // 로컬스토리지에서 사용자 정보 가져오는 함수
+  const loadUserInfoFromLocalStorage = (): Classroom | null => {
     try {
-      const savedClassroomName = localStorage.getItem('classroom_name') || '';
-      const savedClassroomCode = localStorage.getItem('classroom_code') || '';
-      const savedClassroomId = localStorage.getItem('classroom_id') || '';
-      const savedManagerUserId = localStorage.getItem('manager_user_id') || '';
-      const savedIsManager = localStorage.getItem('isManager') === 'true';
-
-      setClassroomName(savedClassroomName);
-      setClassroomCode(savedClassroomCode);
-      setClassroomId(savedClassroomId);
-      setManagerUserId(savedManagerUserId);
-      setIsManager(savedIsManager);
-
+      const classroomData = JSON.parse(localStorage.getItem('classroom') || 'null');
       console.log('[ClassroomPage] 로컬스토리지에서 로드된 정보:', {
-        classroomCode: savedClassroomCode,
-        classroomName: savedClassroomName,
-        isManager: savedIsManager,
+        classroomCode: classroomData?.classroom_code,
+        classroomName: classroomData?.classroom_name,
+        isManager: classroomData?.isManager,
       });
+      return classroomData;
     } catch (error) {
       console.error('[ClassroomPage] 로컬스토리지 로드 오류:', error);
+      return null;
     }
   };
 
-  // authenticateUser 함수 수정
-  const authenticateUser = async (): Promise<string | null> => {
+  // 사용자 인증 및 정보 추출
+  const authenticateAndExtractUser = async (): Promise<{ token: string; userName: string } | null> => {
     try {
       const {
         data: { session },
@@ -93,96 +86,33 @@ export default function ClassroomPage({ questList }: ClassroomPageProps): JSX.El
         return null;
       }
 
-      const token = session?.access_token || null;
-
+      const token = session?.access_token;
       if (!token) {
-        console.log('[ClassroomPage] authenticateUser: 토큰이 없습니다.');
+        console.log('[ClassroomPage] 토큰이 없습니다.');
         alert('로그인이 필요합니다.');
         window.location.href = '/';
         return null;
       }
 
-      return token;
+      const nickname = session.user.user_metadata?.nickname || '미식별자';
+
+      console.log('[ClassroomPage] 인증 및 사용자 정보 추출 완료:', {
+        userId: session.user.id,
+        nickname: nickname,
+        email: session.user.email,
+      });
+
+      return { token, userName: nickname };
     } catch (error) {
-      console.error('[ClassroomPage] 토큰 파싱 오류:', error);
+      console.error('[ClassroomPage] 인증 및 사용자 정보 추출 오류:', error);
       alert('토큰이 손상되었습니다. 다시 로그인해주세요.');
       window.location.href = '/';
       return null;
     }
   };
 
-  // 현재 없는 함수 - 추가 필요
-  const extractUserInfoFromToken = async (): Promise<void> => {
-    try {
-      const {
-        data: { session },
-        error,
-      } = await supabase.auth.getSession();
-
-      if (error || !session) {
-        console.error('[ClassroomPage] 세션 정보 없음:', error);
-        return;
-      }
-
-      // 토큰에서 닉네임 추출
-      const nickname = session.user.user_metadata?.nickname || '미식별자';
-      setUserName(nickname);
-
-      console.log('[ClassroomPage] 토큰에서 추출된 사용자 정보:', {
-        userId: session.user.id,
-        nickname: nickname,
-        email: session.user.email,
-      });
-    } catch (error) {
-      console.error('[ClassroomPage] 사용자 정보 추출 오류:', error);
-      setUserName('미식별자');
-    }
-  };
-
-  // 로컬스토리지 로드
-  useEffect(() => {
-    loadUserInfoFromLocalStorage();
-  }, []);
-
-// 토큰 인증
-useEffect(() => {
-  const handleAuth = async () => {
-    const token = await authenticateUser();
-    console.log('[ClassroomPage] authenticateUser 결과:', !!token);
-
-    if (token) {
-      setCurrentToken(token);
-      await extractUserInfoFromToken(); // 토큰에서 사용자명 추출
-      console.log('[ClassroomPage] currentToken 설정 완료');
-    } else {
-      console.log('[ClassroomPage] 토큰이 없어서 설정하지 않음');
-    }
-  };
-  handleAuth();
-}, []);
-
-  // 연결 useEffect
-  useEffect(() => {
-    console.log('[ClassroomPage] 소켓 연결 조건 체크:', {
-      hasCurrentToken: !!currentToken,
-      hasClassroomCode: !!classroomCode,
-      hasUserName: !!userName,
-      isConnectedCurrent: isConnected.current,
-    });
-
-    if (!currentToken) {
-      console.log('[ClassroomPage] 토큰 대기 중... 소켓 연결 보류');
-      return;
-    }
-
-    if (!classroomCode || !userName) {
-      console.log('[ClassroomPage] 사용자 정보 대기 중... 소켓 연결 보류', {
-        classroomCode: classroomCode,
-        userName: userName,
-      });
-      return;
-    }
-
+  // 소켓 연결 설정
+  const setupSocketConnection = (token: string, classroomData: Classroom, userName: string) => {
     if (isConnected.current) {
       console.log('[ClassroomPage] 이미 연결됨, 중복 연결 방지');
       return;
@@ -191,51 +121,36 @@ useEffect(() => {
     isConnected.current = true;
     console.log('[ClassroomPage] 소켓 연결 시작...');
 
-    // 소켓 연결
     const socket = io('https://coblocks-back.onrender.com/', {
-      auth: {
-        token: currentToken, // 토큰 객체에서 access_token 추출
-      },
+      auth: { token },
     });
 
     socketRef.current = socket;
 
+    // 소켓 이벤트 리스너 설정
     socket.on('error', (err) => {
-      console.log('[ClassroomPage] 소켓 오류: ', err.message);
-      console.log('[ClassroomPage] 소켓 DATA: ', err.data);
+      console.log('[ClassroomPage] 소켓 오류:', err.message, err.data);
     });
-
-    // join 전용 payload
-    const joinPayload = {
-      code: classroomCode,
-      userName,
-    };
-
-    // create 전용 payload
-    const createPayload = {
-      name: classroomName,
-      code: classroomCode,
-      managerName: userName,
-      id: classroomId,
-      managerUserId: managerUserId,
-    };
 
     socket.on('connect', () => {
       console.log('[ClassroomPage] 소켓 연결 성공:', socket.id);
 
-      if (isManager) {
+      if (classroomData.isManager) {
+        const createPayload = {
+          name: classroomData.classroom_name,
+          code: classroomData.classroom_code,
+          managerName: userName,
+          id: classroomData.classroom_id,
+          managerId: classroomData.manager_users_id,
+        };
+
         socket.emit('classroom:create', createPayload, (res: ClassroomCreateResponse) => {
           if (res.success) {
-            console.log('[ClassroomPage] 방 생성 성공:', socket.id, res);
-            console.log('[ClassroomPage] 방 정보:', res.classroom);
-            console.log('[ClassroomPage] 참가자 목록:', res.users);
-
-            const newParticipants: Participant[] = res.users.map((user) => {
-              return {
-                userName: user.userName,
-                isManager: user.isManager,
-              };
-            });
+            console.log('[ClassroomPage] 방 생성 성공:', res);
+            const newParticipants = res.users.map((user) => ({
+              userName: user.userName,
+              isManager: user.isManager,
+            }));
             setParticipants(newParticipants);
           } else {
             console.error('[ClassroomPage] 방 생성 실패:', res);
@@ -243,18 +158,18 @@ useEffect(() => {
           }
         });
       } else {
+        const joinPayload = {
+          code: classroomData.classroom_code,
+          userName,
+        };
+
         socket.emit('classroom:join', joinPayload, (res: ClassroomJoinResponse) => {
           if (res.success) {
-            console.log('[ClassroomPage] 방 참여 성공:', socket.id, res);
-            console.log('[ClassroomPage] 방 정보:', res.classroom);
-            console.log('[ClassroomPage] 참가자 목록:', res.users);
-
-            const newParticipants: Participant[] = res.users.map((user) => {
-              return {
-                userName: user.userName,
-                isManager: user.isManager,
-              };
-            });
+            console.log('[ClassroomPage] 방 참여 성공:', res);
+            const newParticipants = res.users.map((user) => ({
+              userName: user.userName,
+              isManager: user.isManager,
+            }));
             setParticipants(newParticipants);
           } else {
             console.error('[ClassroomPage] 방 참여 실패:', res);
@@ -269,12 +184,10 @@ useEffect(() => {
       'classroom:userJoined',
       (data: { userName: string; users: Array<{ userName: string; isManager: boolean }> }) => {
         console.log('[ClassroomPage] 새 참가자 입장:', data.userName);
-        const updatedParticipants: Participant[] = data.users.map((user) => {
-          return {
-            userName: user.userName,
-            isManager: user.isManager,
-          };
-        });
+        const updatedParticipants = data.users.map((user) => ({
+          userName: user.userName,
+          isManager: user.isManager,
+        }));
         setParticipants(updatedParticipants);
       },
     );
@@ -283,12 +196,10 @@ useEffect(() => {
       'classroom:userLeft',
       (data: { userName: string; users: Array<{ userName: string; isManager: boolean }> }) => {
         console.log('[ClassroomPage] 참가자 퇴장:', data.userName);
-        const updatedParticipants: Participant[] = data.users.map((user) => {
-          return {
-            userName: user.userName,
-            isManager: user.isManager,
-          };
-        });
+        const updatedParticipants = data.users.map((user) => ({
+          userName: user.userName,
+          isManager: user.isManager,
+        }));
         setParticipants(updatedParticipants);
       },
     );
@@ -297,24 +208,68 @@ useEffect(() => {
       console.log('[ClassroomPage] 연결 끊김');
       isConnected.current = false;
     });
+  };
 
+  // 통합된 초기화 useEffect
+  useEffect(() => {
+    const initializeClassroom = async () => {
+      if (isInitialized) return;
+
+      console.log('[ClassroomPage] 초기화 시작...');
+
+      // 1. 로컬스토리지에서 강의실 정보 로드
+      const classroomData = loadUserInfoFromLocalStorage();
+      if (!classroomData?.classroom_code) {
+        console.error('[ClassroomPage] 강의실 정보가 없습니다.');
+        alert('강의실 정보가 없습니다.');
+        window.location.href = '/';
+        return;
+      }
+
+      // 2. 사용자 인증 및 정보 추출
+      const authData = await authenticateAndExtractUser();
+      if (!authData) return;
+
+      // 3. 상태 설정
+      setClassroom(classroomData);
+      setCurrentToken(authData.token);
+      setUserName(authData.userName);
+
+      console.log('[ClassroomPage] 초기화 완료:', {
+        classroomCode: classroomData.classroom_code,
+        userName: authData.userName,
+        isManager: classroomData.isManager,
+      });
+
+      // 4. 소켓 연결 설정
+      setupSocketConnection(authData.token, classroomData, authData.userName);
+
+      setIsInitialized(true);
+    };
+
+    initializeClassroom();
+
+    // 정리 함수
     return () => {
-      if (socket.connected) {
-        socket.emit('leaveRoom', { code: classroomCode, userName });
-        socket.disconnect();
+      if (socketRef.current?.connected && classroom?.classroom_code) {
+        socketRef.current.emit('leaveRoom', {
+          code: classroom.classroom_code,
+          userName,
+        });
+        socketRef.current.disconnect();
       }
       isConnected.current = false;
     };
-  }, [currentToken, classroomCode, userName, isManager]);
+  }, [isInitialized]); // isInitialized만 의존성으로 설정
 
   const handleQuestSelect = (quest: Quest): void => {
     setSelectedQuest(quest);
     console.log('퀘스트 선택:', quest);
 
     // 퀘스트 선택 시 소켓 이벤트 전송
-    if (isManager && socketRef.current) {
+    if (classroom?.isManager && socketRef.current) {
       socketRef.current.emit('activity:selectProblem', {
-        code: classroomCode,
+        code: classroom.classroom_code,
         questId: quest.quest_id,
       });
     }
@@ -322,7 +277,7 @@ useEffect(() => {
 
   // 게임 시작 함수
   const handleGameStart = (): void => {
-    if (!isManager) {
+    if (!classroom?.isManager) {
       alert('개설자만 게임을 시작할 수 있습니다.');
       return;
     }
@@ -333,12 +288,41 @@ useEffect(() => {
     }
 
     if (socketRef.current) {
-      // 이벤트만 전송 (서버에서 모든 로직 처리)
       socketRef.current.emit('activity:start');
       console.log('게임 시작 요청:', selectedQuest);
+
+      const quest = {
+        quest_id: selectedQuest.quest_id,
+      };
+      localStorage.setItem('selectedQuest', JSON.stringify(quest));
       window.location.href = '/classroom/workspace';
     }
   };
+
+  const handleQuit = (): void => {
+    if (socketRef.current) {
+      socketRef.current.emit('classroom:leave', { code: classroom?.classroom_code });
+      socketRef.current.disconnect();
+    }
+    window.location.href = '/';
+  };
+
+  // 초기화가 완료되지 않았으면 로딩 표시
+  if (!isInitialized || !classroom) {
+    return (
+      <div
+        style={{
+          minHeight: '85vh',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: '#f8f9fa',
+        }}
+      >
+        <div>로딩 중...</div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ minHeight: '85vh', backgroundColor: '#f8f9fa', padding: '20px', borderRadius: '8px' }}>
@@ -358,9 +342,10 @@ useEffect(() => {
               <IoSchool size={28} />
               강의실
             </h2>
-            <p style={{ margin: '8px 0 0 0' }}>강의실 코드: {classroomCode}</p>
+            <p style={{ margin: '8px 0 0 0' }}>강의실 코드: {classroom.classroom_code}</p>
           </div>
           <button
+            onClick={handleQuit}
             style={{
               backgroundColor: '#dc3545',
               color: 'white',
@@ -385,23 +370,23 @@ useEffect(() => {
         <QuestList
           quests={questList}
           selectedQuest={selectedQuest}
-          isManager={isManager}
+          isManager={classroom.isManager}
           onQuestSelect={handleQuestSelect}
         />
 
         <QuestDetail
           selectedQuest={selectedQuest}
-          roomCode={classroomCode}
-          isManager={isManager}
+          roomCode={classroom.classroom_code}
+          isManager={classroom.isManager}
           onGameStart={handleGameStart}
         />
 
         <div>
           <ParticipantList participants={participants} />
           <Chat
-            code={classroomCode}
+            code={classroom.classroom_code}
             userName={userName}
-            socket={socketRef.current} // 소켓 전달
+            socket={socketRef.current}
           />
         </div>
       </div>
