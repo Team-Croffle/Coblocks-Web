@@ -14,7 +14,7 @@ export const WorkspaceWrapper = (): JSX.Element => {
   const [stageData, setStageData] = useState<StageData | null>(null);
   const [codes, setCodes] = useState<CodeSet>({});
 
-  const { socket, questInfo, participants, setSession, connectionSocket } = useWorkspace();
+  const { socket, questInfo, participants, isConnected, setSession, connectionSocket } = useWorkspace();
 
   const stageRef = useRef<StageRef>(null);
   const nav = useNavigate();
@@ -25,15 +25,13 @@ export const WorkspaceWrapper = (): JSX.Element => {
   useEffect(() => {
     setIsMounted(true);
 
-    connectionSocket();
-
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session!);
     });
 
-    socket?.emit('classroom:getList');
+    // socket?.emit('classroom:getList');
 
     if (questInfo) {
       const dataSet: StageDataSet = JSON.parse(questInfo.default_stage);
@@ -47,7 +45,7 @@ export const WorkspaceWrapper = (): JSX.Element => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [supabase, setSession, connectionSocket]);
+  }, [supabase, setSession]);
 
   if (!isMounted) {
     return <div>Loading...</div>;
