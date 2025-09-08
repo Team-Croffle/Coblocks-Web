@@ -3,7 +3,7 @@
   "bracketSpacing": true,
   "endOfLine": "auto",
   "jsxSingleQuote": true,
-  "parser": "babel",
+  "parser": "typescript",
   "printWidth": 120,
   "quoteProps": "as-needed",
   "semi": true,
